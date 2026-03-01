@@ -29,6 +29,11 @@
         <el-table-column prop="shujifenlei" label="分类" />
         <el-table-column prop="xinjiuchengdu" label="新旧程度" width="100" />
         <el-table-column prop="price" label="价格" width="80" />
+        <el-table-column prop="kucun" label="库存" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.kucun > 10 ? 'success' : row.kucun > 0 ? 'warning' : 'danger'">{{ row.kucun || 0 }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="shangjiaxingming" label="商家" />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
@@ -62,6 +67,7 @@
         </el-form-item>
         <el-form-item label="出版社"><el-input v-model="form.chubanshe" /></el-form-item>
         <el-form-item label="价格"><el-input-number v-model="form.price" :min="0" :precision="2" /></el-form-item>
+        <el-form-item label="库存数量"><el-input-number v-model="form.kucun" :min="0" :step="1" /></el-form-item>
         <el-form-item label="书籍简介"><el-input v-model="form.shujijianjie" type="textarea" :rows="4" /></el-form-item>
       </el-form>
       <template #footer>
@@ -89,7 +95,7 @@ const loadData = async () => {
   if (res.code === 0) { tableData.value = res.data.list; total.value = res.data.total }
 }
 const resetSearch = () => { Object.assign(searchForm, { shujimingcheng: '', shujifenlei: '' }); loadData() }
-const openDialog = (row) => { isEdit.value = !!row; form.value = row ? { ...row } : { xinjiuchengdu: '全新', price: 0 }; dialogVisible.value = true }
+const openDialog = (row) => { isEdit.value = !!row; form.value = row ? { ...row } : { xinjiuchengdu: '全新', price: 0, kucun: 1 }; dialogVisible.value = true }
 const handleSave = async () => {
   const url = isEdit.value ? '/ershoushuji/update' : '/ershoushuji/save'
   const { data: res } = await http.post(url, form.value)

@@ -105,7 +105,7 @@ const submitOrder = async () => {
     sessionStorage.removeItem('checkout_items')
     router.push('/front/orders')
   } catch (e) {
-    ElMessage.error('下单失败')
+    ElMessage.error(e.response?.data?.msg || '下单失败，请检查库存')
   } finally {
     submitting.value = false
   }
