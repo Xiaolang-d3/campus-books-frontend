@@ -50,6 +50,10 @@
                 </div>
               </div>
 
+              <div v-if="resolveHierarchyPath(book)" class="hierarchy-path">
+                {{ resolveHierarchyPath(book) }}
+              </div>
+
               <el-descriptions :column="2" border class="book-descriptions">
                 <el-descriptions-item label="书籍编号">
                   <el-tag size="small">{{ book.shujibianhao }}</el-tag>
@@ -58,6 +62,10 @@
                 <el-descriptions-item label="分类">
                   <el-tag type="success" size="small">{{ book.shujifenlei }}</el-tag>
                 </el-descriptions-item>
+                <el-descriptions-item label="学院">{{ book.xueyuan || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="专业">{{ book.zhuanye || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="课程">{{ book.kecheng || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="版本">{{ book.banben || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="新旧程度">
                   <el-tag type="warning" size="small">{{ book.xinjiuchengdu }}</el-tag>
                 </el-descriptions-item>
@@ -193,6 +201,7 @@ import {
   Promotion, View, CircleCheck, Warning, CircleClose, Lock
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+import { resolveHierarchyPath } from '@/utils/bookHierarchy'
 
 const route = useRoute()
 const router = useRouter()
@@ -468,6 +477,16 @@ onMounted(() => {
 
 .book-descriptions {
   margin-bottom: 24px;
+}
+
+.hierarchy-path {
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f0f9ff;
+  color: #0369a1;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .action-section {

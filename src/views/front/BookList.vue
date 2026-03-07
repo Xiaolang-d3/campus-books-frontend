@@ -1,6 +1,5 @@
 <template>
   <div class="book-list-container">
-    <!-- 搜索筛选区 -->
     <el-card class="filter-card" shadow="never">
       <el-form inline>
         <el-form-item label="书名">
@@ -10,7 +9,7 @@
             clearable
             @clear="loadData"
             @keyup.enter="loadData"
-            style="width: 200px"
+            style="width: 220px"
           >
             <template #prefix>
               <el-icon><Search /></el-icon>
@@ -18,14 +17,28 @@
           </el-input>
         </el-form-item>
         <el-form-item label="分类">
-          <el-select
-            v-model="search.shujifenlei"
-            placeholder="全部分类"
-            clearable
-            @change="loadData"
-            style="width: 150px"
-          >
-            <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
+          <el-select v-model="search.shujifenlei" placeholder="全部分类" clearable @change="loadData" style="width: 150px">
+            <el-option v-for="category in categories" :key="category" :label="category" :value="category" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学院">
+          <el-select v-model="search.xueyuan" placeholder="全部学院" clearable @change="handleCollegeChange" style="width: 150px">
+            <el-option v-for="college in colleges" :key="college" :label="college" :value="college" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="专业">
+          <el-select v-model="search.zhuanye" placeholder="全部专业" clearable @change="handleMajorChange" style="width: 160px">
+            <el-option v-for="major in majors" :key="major" :label="major" :value="major" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="课程">
+          <el-select v-model="search.kecheng" placeholder="全部课程" clearable @change="handleCourseChange" style="width: 180px">
+            <el-option v-for="course in courses" :key="course" :label="course" :value="course" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="版本">
+          <el-select v-model="search.banben" placeholder="全部版本" clearable @change="loadData" style="width: 160px">
+            <el-option v-for="version in versions" :key="version" :label="version" :value="version" />
           </el-select>
         </el-form-item>
         <el-form-item label="排序">
@@ -33,32 +46,30 @@
             <el-option label="最新上架" value="addtime" />
             <el-option label="价格从低到高" value="price_asc" />
             <el-option label="价格从高到低" value="price_desc" />
-            <el-option label="热度最高" value="clicknum" />
           </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="loadData" :loading="loading">
-            <el-icon><Search /></el-icon> 搜索
+            <el-icon><Search /></el-icon>
+            搜索
           </el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
-    <!-- 结果统计 -->
     <div class="result-info" v-if="!loading">
-      <span>共找到 <strong>{{ total }}</strong> 本书籍</span>
+      共找到 <strong>{{ total }}</strong> 本专业书籍
     </div>
 
-    <!-- 书籍列表 -->
     <el-skeleton :loading="loading" animated :count="8">
       <template #template>
-        <el-row :gutter="16" style="margin-top:16px">
-          <el-col :xs="12" :sm="8" :md="6" v-for="i in 8" :key="i">
+        <el-row :gutter="16" style="margin-top: 16px">
+          <el-col :xs="12" :sm="8" :md="6" v-for="item in 8" :key="item">
             <el-card class="book-card-skeleton">
               <el-skeleton-item variant="image" style="width: 100%; height: 200px" />
               <div style="padding: 12px 0">
                 <el-skeleton-item variant="text" style="width: 80%" />
-                <el-skeleton-item variant="text" style="width: 40%; margin-top: 8px" />
+                <el-skeleton-item variant="text" style="width: 50%; margin-top: 8px" />
               </div>
             </el-card>
           </el-col>
@@ -67,28 +78,20 @@
 
       <template #default>
         <el-empty v-if="!list.length" description="暂无书籍数据" />
-        <el-row :gutter="16" style="margin-top:16px" v-else>
+        <el-row v-else :gutter="16" style="margin-top: 16px">
           <el-col :xs="12" :sm="8" :md="6" v-for="book in list" :key="book.id">
-            <el-card
-              shadow="hover"
-              class="book-card"
-              @click="$router.push(`/front/book/${book.id}`)"
-            >
+            <el-card class="book-card" shadow="hover" @click="$router.push(`/front/book/${book.id}`)">
               <div class="book-img-wrapper">
                 <img :src="getImg(book.shujifengmian)" class="book-img" loading="lazy" />
-                <div class="book-overlay" v-if="!book.kucun || book.kucun <= 0">
-                  <span>已售罄</span>
-                </div>
-                <div class="book-badge hot" v-else-if="book.clicknum > 100">
-                  <el-icon><TrendCharts /></el-icon> 热销
-                </div>
+                <div class="book-overlay" v-if="!book.kucun || book.kucun <= 0">已售罄</div>
               </div>
               <div class="book-info">
-                <div class="book-name" :title="book.shujimingcheng">
-                  {{ book.shujimingcheng }}
-                </div>
+                <div class="book-name" :title="book.shujimingcheng">{{ book.shujimingcheng }}</div>
                 <div class="book-author">{{ book.shujizuozhe }}</div>
-                <div class="book-price">¥{{ book.price }}</div>
+                <div class="book-path" :title="resolveHierarchyPath(book)">
+                  {{ resolveHierarchyPath(book) || '未标注专业分类' }}
+                </div>
+                <div class="book-price">￥{{ book.price }}</div>
                 <div class="book-meta">
                   <el-tag size="small" effect="plain">{{ book.shujifenlei }}</el-tag>
                   <span class="condition">{{ book.xinjiuchengdu }}</span>
@@ -98,7 +101,7 @@
                     <el-icon><CircleCheck /></el-icon> 库存充足
                   </span>
                   <span v-else-if="book.kucun > 0" class="stock-low">
-                    <el-icon><Warning /></el-icon> 仅剩{{ book.kucun }}件
+                    <el-icon><Warning /></el-icon> 仅剩 {{ book.kucun }} 件
                   </span>
                   <span v-else class="stock-out">
                     <el-icon><CircleClose /></el-icon> 已售罄
@@ -111,10 +114,9 @@
       </template>
     </el-skeleton>
 
-    <!-- 分页 -->
     <el-pagination
       v-if="total > 0 && !loading"
-      style="margin-top:24px;justify-content:center"
+      style="margin-top: 24px; justify-content: center"
       background
       layout="total, prev, pager, next, jumper"
       :total="total"
@@ -126,65 +128,91 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Search, TrendCharts, CircleCheck, Warning, CircleClose } from '@element-plus/icons-vue'
+import { computed, onMounted, ref } from 'vue'
+import { CircleCheck, CircleClose, Search, Warning } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/utils/http'
+import { getColleges, getCourses, getMajors, getVersions, resolveHierarchyPath } from '@/utils/bookHierarchy'
 
 const loading = ref(false)
 const list = ref([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = 12
-const search = ref({ shujimingcheng: '', shujifenlei: '' })
 const sortType = ref('addtime')
 const categories = ref([])
-const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
+const colleges = getColleges()
+const search = ref({
+  shujimingcheng: '',
+  shujifenlei: '',
+  xueyuan: '',
+  zhuanye: '',
+  kecheng: '',
+  banben: '',
+})
+
+const majors = computed(() => getMajors(search.value.xueyuan))
+const courses = computed(() => getCourses(search.value.xueyuan, search.value.zhuanye))
+const versions = computed(() => getVersions(search.value.xueyuan, search.value.zhuanye, search.value.kecheng))
+
+const getImg = (value) => (value ? (value.startsWith('http') ? value : `/api/file/download/${value}`) : '')
+
+const handleCollegeChange = () => {
+  search.value.zhuanye = ''
+  search.value.kecheng = ''
+  search.value.banben = ''
+  loadData()
+}
+
+const handleMajorChange = () => {
+  search.value.kecheng = ''
+  search.value.banben = ''
+  loadData()
+}
+
+const handleCourseChange = () => {
+  search.value.banben = ''
+  loadData()
+}
 
 const loadData = async () => {
   loading.value = true
   try {
-    const params = { page: page.value, limit: pageSize }
+    const params = {
+      page: page.value,
+      limit: pageSize,
+      ...search.value,
+    }
 
-    // 排序处理
     if (sortType.value === 'price_asc') {
       params.sort = 'price'
       params.order = 'asc'
     } else if (sortType.value === 'price_desc') {
       params.sort = 'price'
       params.order = 'desc'
-    } else if (sortType.value === 'clicknum') {
-      params.sort = 'clicknum'
-      params.order = 'desc'
     } else {
       params.sort = 'addtime'
       params.order = 'desc'
     }
 
-    if (search.value.shujimingcheng) params.shujimingcheng = search.value.shujimingcheng
-    if (search.value.shujifenlei) params.shujifenlei = search.value.shujifenlei
-
     const res = await http.get('/ershoushuji/list', { params })
     list.value = res.data?.data?.list || []
     total.value = res.data?.data?.total || 0
-
-    // 滚动到顶部
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (e) {
     ElMessage.error('加载数据失败')
-    console.error(e)
   } finally {
     loading.value = false
   }
 }
 
 onMounted(async () => {
-  loadData()
+  await loadData()
   try {
     const res = await http.get('/option/shujifenlei/shujifenlei')
     categories.value = res.data?.data || []
-  } catch (e) {
-    console.error(e)
+  } catch {
+    categories.value = []
   }
 })
 </script>
@@ -224,7 +252,7 @@ onMounted(async () => {
 
 .book-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .book-img-wrapper {
@@ -245,32 +273,13 @@ onMounted(async () => {
 
 .book-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.book-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 152, 0, 0.9);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-weight: 700;
 }
 
 .book-info {
@@ -278,27 +287,32 @@ onMounted(async () => {
 }
 
 .book-name {
-  font-weight: bold;
+  margin-bottom: 4px;
   font-size: 15px;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 4px;
 }
 
 .book-author {
   color: #999;
   font-size: 13px;
   margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.book-path {
+  min-height: 38px;
+  margin-bottom: 8px;
+  color: #606266;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .book-price {
   color: #f56c6c;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   margin: 8px 0;
 }
 
@@ -306,60 +320,30 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
 }
 
-.book-meta .condition {
+.condition {
   color: #999;
   font-size: 12px;
 }
 
 .book-stock {
   margin-top: 8px;
-  font-size: 12px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 12px;
 }
 
 .stock-good {
   color: #67c23a;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .stock-low {
   color: #e6a23c;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .stock-out {
   color: #f56c6c;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .filter-card :deep(.el-form-item) {
-    margin-bottom: 12px;
-  }
-
-  .book-img {
-    height: 180px;
-  }
-
-  .book-name {
-    font-size: 14px;
-  }
-
-  .book-price {
-    font-size: 16px;
-  }
 }
 </style>
