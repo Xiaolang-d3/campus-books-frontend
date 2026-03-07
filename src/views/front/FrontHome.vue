@@ -156,7 +156,7 @@ const addToCart = async (book) => {
       picture: book.shujifengmian,
       buynumber: 1,
       price: book.price,
-      userid: JSON.parse(localStorage.getItem('userInfo') || '{}').id
+      userid: Number(localStorage.getItem('userid'))
     })
     ElMessage.success('已加入购物车')
   } catch (e) {

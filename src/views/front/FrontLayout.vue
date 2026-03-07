@@ -4,8 +4,8 @@
       <div class="header-inner">
         <div class="logo" @click="$router.push('/front/home')">
           <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           <span class="logo-text">校园书市</span>
         </div>
@@ -40,7 +40,7 @@
               </el-badge>
             </div>
 
-            <el-dropdown @command="handleCmd" trigger="click" :hide-on-click="true">
+            <el-dropdown @command="handleCmd" trigger="click">
               <div class="user-btn">
                 <div class="avatar">{{ username[0]?.toUpperCase() }}</div>
                 <span class="username-text">{{ username }}</span>
@@ -49,6 +49,7 @@
                 <el-dropdown-menu class="user-dropdown">
                   <el-dropdown-item command="wallet">我的钱包</el-dropdown-item>
                   <el-dropdown-item command="orders">我的订单</el-dropdown-item>
+                  <el-dropdown-item command="my-books">我的发布</el-dropdown-item>
                   <el-dropdown-item command="storeup">我的收藏</el-dropdown-item>
                   <el-dropdown-item command="address">收货地址</el-dropdown-item>
                   <el-dropdown-item command="center">个人中心</el-dropdown-item>
@@ -79,9 +80,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ShoppingCart, Search } from '@element-plus/icons-vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Search, ShoppingCart } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
 const router = useRouter()
@@ -93,7 +94,7 @@ const searchKeyword = ref('')
 
 const navItems = [
   { label: '首页', path: '/front/home' },
-  { label: '书籍市场', path: '/front/books' }
+  { label: '书籍市场', path: '/front/books' },
 ]
 
 const loadCartCount = async () => {
@@ -101,33 +102,36 @@ const loadCartCount = async () => {
   try {
     const res = await http.get('/cart/page', { params: { page: 1, limit: 999 } })
     cartCount.value = res.data?.data?.total || 0
-  } catch (e) { /* ignore */ }
+  } catch {}
 }
 
 const handleSearch = () => {
+  const query = { keyword: searchKeyword.value }
   if (route.path !== '/front/books') {
-    router.push({ path: '/front/books', query: { keyword: searchKeyword.value } })
+    router.push({ path: '/front/books', query })
   } else {
-    router.push({ query: { keyword: searchKeyword.value } })
+    router.push({ query })
   }
 }
 
-watch(() => route.query.keyword, (newVal) => {
-  searchKeyword.value = newVal || ''
-}, { immediate: true })
+watch(
+  () => route.query.keyword,
+  (newVal) => {
+    searchKeyword.value = newVal || ''
+  },
+  { immediate: true }
+)
 
-onMounted(() => {
-  loadCartCount()
-})
+onMounted(loadCartCount)
 
 const handleCmd = (cmd) => {
   if (cmd === 'logout') {
     localStorage.clear()
     isLogin.value = false
     router.push('/front/home')
-  } else {
-    router.push(`/front/${cmd}`)
+    return
   }
+  router.push(`/front/${cmd}`)
 }
 </script>
 
@@ -170,11 +174,6 @@ const handleCmd = (cmd) => {
   gap: 12px;
   cursor: pointer;
   user-select: none;
-  transition: opacity 0.2s;
-}
-
-.logo:hover {
-  opacity: 0.7;
 }
 
 .logo-icon {
@@ -187,7 +186,6 @@ const handleCmd = (cmd) => {
   font-size: 20px;
   font-weight: 600;
   color: #1a1a1a;
-  letter-spacing: 0.5px;
 }
 
 .nav-links {
@@ -203,60 +201,16 @@ const handleCmd = (cmd) => {
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.2s;
-  user-select: none;
-  position: relative;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 6px;
-  left: 16px;
-  right: 16px;
-  height: 2px;
-  background: #1a1a1a;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s ease;
-}
-
+.nav-link.active,
 .nav-link:hover {
   color: #1a1a1a;
-}
-
-.nav-link:hover::after {
-  transform: scaleX(1);
-}
-
-.nav-link.active {
-  color: #1a1a1a;
-  font-weight: 500;
-}
-
-.nav-link.active::after {
-  transform: scaleX(1);
+  background: #f5f5f5;
 }
 
 .search-box {
   width: 280px;
-}
-
-.search-box :deep(.el-input__wrapper) {
-  border-radius: 20px;
-  box-shadow: 0 0 0 1px #e8e8e8 inset;
-  transition: all 0.3s;
-}
-
-.search-box :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #d0d0d0 inset;
-}
-
-.search-box :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #1a1a1a inset;
-}
-
-.search-box :deep(.el-input__inner) {
-  font-size: 14px;
 }
 
 .header-actions {
@@ -273,40 +227,10 @@ const handleCmd = (cmd) => {
   justify-content: center;
   cursor: pointer;
   border-radius: 8px;
-  transition: all 0.2s;
-  position: relative;
 }
 
 .cart-btn:hover {
   background: #f5f5f5;
-  transform: scale(1.05);
-}
-
-.cart-btn svg {
-  width: 22px;
-  height: 22px;
-  color: #1a1a1a;
-}
-
-.cart-btn :deep(.el-badge__content) {
-  background: #ff4d4f;
-  border: none;
-  font-size: 11px;
-  height: 18px;
-  line-height: 18px;
-  padding: 0 5px;
-  animation: badgePulse 2s ease-in-out infinite;
-}
-
-@keyframes badgePulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 4px rgba(255, 77, 79, 0);
-  }
 }
 
 .user-btn {
@@ -316,7 +240,6 @@ const handleCmd = (cmd) => {
   padding: 6px 12px 6px 6px;
   border-radius: 20px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
 .user-btn:hover {
@@ -334,23 +257,12 @@ const handleCmd = (cmd) => {
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
-}
-
-.user-btn:hover .avatar {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .username-text {
   font-size: 14px;
   color: #1a1a1a;
   font-weight: 500;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .auth-btn {
@@ -360,9 +272,7 @@ const handleCmd = (cmd) => {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
   border: none;
-  outline: none;
 }
 
 .auth-btn.login {
@@ -370,26 +280,9 @@ const handleCmd = (cmd) => {
   color: #1a1a1a;
 }
 
-.auth-btn.login:hover {
-  background: #f5f5f5;
-}
-
 .auth-btn.signup {
   background: #1a1a1a;
   color: #fff;
-}
-
-.auth-btn.signup:hover {
-  background: #000;
-}
-
-.user-dropdown {
-  margin-top: 8px;
-}
-
-.user-dropdown :deep(.el-dropdown-menu__item) {
-  padding: 10px 20px;
-  font-size: 14px;
 }
 
 .front-main {
@@ -403,7 +296,6 @@ const handleCmd = (cmd) => {
 .front-footer {
   background: #fff;
   border-top: 1px solid #e8e8e8;
-  height: auto;
   padding: 24px 0;
 }
 
@@ -418,46 +310,5 @@ const handleCmd = (cmd) => {
   margin: 0;
   color: #999;
   font-size: 14px;
-}
-
-@media (max-width: 768px) {
-  .header-inner {
-    padding: 0 16px;
-    gap: 16px;
-  }
-
-  .logo-text {
-    font-size: 16px;
-  }
-
-  .nav-links {
-    gap: 4px;
-  }
-
-  .nav-link {
-    padding: 6px 12px;
-    font-size: 14px;
-  }
-
-  .nav-link::after {
-    left: 12px;
-    right: 12px;
-  }
-
-  .search-box {
-    display: none;
-  }
-
-  .username-text {
-    display: none;
-  }
-
-  .front-main {
-    padding: 16px;
-  }
-
-  .footer-inner {
-    padding: 0 16px;
-  }
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
   <el-card>
     <template #header>个人信息</template>
+
     <el-form :model="form" label-width="100px" style="max-width: 560px">
       <template v-if="tableName === 'users'">
         <el-form-item label="用户名">
@@ -11,7 +12,7 @@
         </el-form-item>
       </template>
 
-      <template v-else-if="tableName === 'yonghu'">
+      <template v-else>
         <el-form-item label="学号">
           <el-input v-model="form.yonghuzhanghao" disabled />
         </el-form-item>
@@ -26,24 +27,6 @@
         </el-form-item>
         <el-form-item label="年级">
           <el-input v-model="form.nianji" />
-        </el-form-item>
-        <el-form-item label="性别">
-          <el-radio-group v-model="form.xingbie">
-            <el-radio value="男">男</el-radio>
-            <el-radio value="女">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="电话">
-          <el-input v-model="form.dianhuahaoma" />
-        </el-form-item>
-      </template>
-
-      <template v-else-if="tableName === 'shangjia'">
-        <el-form-item label="账号">
-          <el-input v-model="form.shangjiazhanghao" disabled />
-        </el-form-item>
-        <el-form-item label="姓名">
-          <el-input v-model="form.shangjiaxingming" />
         </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-model="form.xingbie">
@@ -72,7 +55,7 @@ const tableName = localStorage.getItem('tableName') || 'users'
 const form = ref({})
 
 onMounted(async () => {
-  const url = tableName === 'users' ? '/users/session' : `/${tableName}/session`
+  const url = tableName === 'users' ? '/users/session' : '/yonghu/session'
   const { data: res } = await http.get(url)
   if (res.code === 0) {
     form.value = res.data
@@ -80,12 +63,22 @@ onMounted(async () => {
 })
 
 const handleSave = async () => {
-  if (tableName === 'yonghu' && (!form.value.xueyuan || !form.value.zhuanye || !form.value.nianji)) {
-    ElMessage.error('请完整填写学院、专业和年级')
-    return
+  if (tableName === 'yonghu') {
+    const requiredFields = [
+      ['yonghuxingming', '姓名'],
+      ['xueyuan', '学院'],
+      ['zhuanye', '专业'],
+      ['nianji', '年级'],
+    ]
+    for (const [field, label] of requiredFields) {
+      if (!form.value[field]) {
+        ElMessage.error(`${label}不能为空`)
+        return
+      }
+    }
   }
 
-  const url = tableName === 'users' ? '/users/update' : `/${tableName}/update`
+  const url = tableName === 'users' ? '/users/update' : '/yonghu/update'
   const { data: res } = await http.post(url, form.value)
   if (res.code === 0) {
     ElMessage.success('保存成功')

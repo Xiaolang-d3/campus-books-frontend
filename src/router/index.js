@@ -4,14 +4,13 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/Login.vue')
+    component: () => import('@/views/Login.vue'),
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/Register.vue')
+    component: () => import('@/views/Register.vue'),
   },
-  // 后台管理
   {
     path: '/',
     component: () => import('@/views/Layout.vue'),
@@ -21,7 +20,6 @@ const routes = [
       { path: 'center', name: '个人信息', component: () => import('@/views/Center.vue') },
       { path: 'password', name: '修改密码', component: () => import('@/views/Password.vue') },
       { path: 'yonghu', name: '用户管理', component: () => import('@/views/modules/yonghu/List.vue') },
-      { path: 'shangjia', name: '商家管理', component: () => import('@/views/modules/shangjia/List.vue') },
       { path: 'shujifenlei', name: '书籍分类', component: () => import('@/views/modules/shujifenlei/List.vue') },
       { path: 'ershoushuji', name: '二手书籍', component: () => import('@/views/modules/ershoushuji/List.vue') },
       { path: 'orders/:status?', name: '订单管理', component: () => import('@/views/modules/orders/List.vue') },
@@ -30,9 +28,8 @@ const routes = [
       { path: 'systemintro', name: '系统简介', component: () => import('@/views/modules/systemintro/List.vue') },
       { path: 'discussershoushuji', name: '书籍评论', component: () => import('@/views/modules/discuss/List.vue') },
       { path: 'config', name: '轮播图管理', component: () => import('@/views/modules/config/List.vue') },
-    ]
+    ],
   },
-  // 前台用户端
   {
     path: '/front',
     component: () => import('@/views/front/FrontLayout.vue'),
@@ -45,29 +42,28 @@ const routes = [
       { path: 'order-confirm', name: '确认订单', component: () => import('@/views/front/OrderConfirm.vue'), meta: { auth: true } },
       { path: 'payment/:id', name: '订单支付', component: () => import('@/views/front/Payment.vue'), meta: { auth: true } },
       { path: 'orders', name: '我的订单', component: () => import('@/views/front/MyOrders.vue'), meta: { auth: true } },
+      { path: 'my-books', name: '我的发布', component: () => import('@/views/front/MyBooks.vue'), meta: { auth: true } },
       { path: 'wallet', name: '我的钱包', component: () => import('@/views/front/Wallet.vue'), meta: { auth: true } },
-      { path: 'address', name: '地址管理页', component: () => import('@/views/front/AddressManage.vue'), meta: { auth: true } },
+      { path: 'address', name: '地址管理', component: () => import('@/views/front/AddressManage.vue'), meta: { auth: true } },
       { path: 'storeup', name: '我的收藏', component: () => import('@/views/front/MyStoreup.vue'), meta: { auth: true } },
       { path: 'news', name: '前台公告', component: () => import('@/views/front/NewsList.vue') },
       { path: 'news/:id', name: '公告详情', component: () => import('@/views/front/NewsDetail.vue') },
       { path: 'center', name: '前台个人中心', component: () => import('@/views/front/FrontCenter.vue'), meta: { auth: true } },
-    ]
-  }
+    ],
+  },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
 })
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  // 前台需要登录的页面
   if (to.meta?.auth && !token) {
     next('/login')
     return
   }
-  // 后台页面（非front、非login/register）需要登录
   if (!to.path.startsWith('/front') && to.path !== '/login' && to.path !== '/register' && !token) {
     next('/login')
     return
