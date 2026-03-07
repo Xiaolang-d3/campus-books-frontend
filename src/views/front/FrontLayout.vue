@@ -47,6 +47,7 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu class="user-dropdown">
+                  <el-dropdown-item command="wallet">我的钱包</el-dropdown-item>
                   <el-dropdown-item command="orders">我的订单</el-dropdown-item>
                   <el-dropdown-item command="storeup">我的收藏</el-dropdown-item>
                   <el-dropdown-item command="address">收货地址</el-dropdown-item>

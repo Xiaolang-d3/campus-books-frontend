@@ -44,9 +44,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
 
+const router = useRouter()
 const list = ref([])
 const total = ref(0)
 const page = ref(1)
@@ -63,10 +65,8 @@ const loadData = async () => {
 }
 
 const pay = async (row) => {
-  await ElMessageBox.confirm(`确认支付 ¥${row.total}？`, '支付确认')
-  await http.post('/orders/update', { id: row.id, status: '已支付' })
-  ElMessage.success('支付成功')
-  loadData()
+  // 跳转到支付页面
+  router.push(`/front/payment/${row.id}`)
 }
 
 const cancel = async (row) => {

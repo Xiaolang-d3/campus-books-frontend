@@ -90,20 +90,27 @@ const submitOrder = async () => {
   submitting.value = true
   const addr = addrList.value.find(a => a.id === selectedAddr.value)
   try {
+    let lastOrderId = null
     for (const item of items.value) {
-      await http.post('/orders/save', {
+      const res = await http.post('/orders/save', {
         tablename: 'ershoushuji', goodid: item.goodid, goodname: item.goodname,
         picture: item.picture, buynumber: item.buynumber, price: item.price,
         total: item.price * item.buynumber, discountprice: 0, discounttotal: 0,
         type: 1, status: '未支付', address: addr.address, tel: addr.phone,
         consignee: addr.name, remark: remark.value
       })
+      lastOrderId = res.data?.data?.id
       // 删除购物车项
       if (item.id) await http.post('/cart/delete', [item.id])
     }
-    ElMessage.success('下单成功')
+    ElMessage.success('下单成功，请前往支付')
     sessionStorage.removeItem('checkout_items')
-    router.push('/front/orders')
+    // 跳转到支付页面
+    if (lastOrderId) {
+      router.push(`/front/payment/${lastOrderId}`)
+    } else {
+      router.push('/front/orders')
+    }
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || '下单失败，请检查库存')
   } finally {
