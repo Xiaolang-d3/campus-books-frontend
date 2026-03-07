@@ -16,6 +16,26 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item label="ISBN">
+          <el-input
+            v-model="search.isbn"
+            placeholder="搜索 ISBN"
+            clearable
+            @clear="loadData"
+            @keyup.enter="loadData"
+            style="width: 180px"
+          />
+        </el-form-item>
+        <el-form-item label="课程编号">
+          <el-input
+            v-model="search.kechengbianhao"
+            placeholder="搜索课程编号"
+            clearable
+            @clear="loadData"
+            @keyup.enter="loadData"
+            style="width: 180px"
+          />
+        </el-form-item>
         <el-form-item label="分类">
           <el-select v-model="search.shujifenlei" placeholder="全部分类" clearable @change="loadData" style="width: 150px">
             <el-option v-for="category in categories" :key="category" :label="category" :value="category" />
@@ -91,6 +111,10 @@
                 <div class="book-path" :title="resolveHierarchyPath(book)">
                   {{ resolveHierarchyPath(book) || '未标注专业分类' }}
                 </div>
+                <div class="book-extra">
+                  <span>ISBN {{ book.isbn || '-' }}</span>
+                  <span>{{ book.kechengbianhao || '-' }}</span>
+                </div>
                 <div class="book-price">￥{{ book.price }}</div>
                 <div class="book-meta">
                   <el-tag size="small" effect="plain">{{ book.shujifenlei }}</el-tag>
@@ -144,6 +168,8 @@ const categories = ref([])
 const colleges = getColleges()
 const search = ref({
   shujimingcheng: '',
+  isbn: '',
+  kechengbianhao: '',
   shujifenlei: '',
   xueyuan: '',
   zhuanye: '',
@@ -307,6 +333,15 @@ onMounted(async () => {
   color: #606266;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.book-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+  color: #909399;
+  font-size: 12px;
 }
 
 .book-price {

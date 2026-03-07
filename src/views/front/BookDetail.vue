@@ -58,7 +58,9 @@
                 <el-descriptions-item label="书籍编号">
                   <el-tag size="small">{{ book.shujibianhao }}</el-tag>
                 </el-descriptions-item>
+                <el-descriptions-item label="ISBN">{{ book.isbn || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="作者">{{ book.shujizuozhe }}</el-descriptions-item>
+                <el-descriptions-item label="课程编号">{{ book.kechengbianhao || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="分类">
                   <el-tag type="success" size="small">{{ book.shujifenlei }}</el-tag>
                 </el-descriptions-item>
@@ -66,6 +68,9 @@
                 <el-descriptions-item label="专业">{{ book.zhuanye || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="课程">{{ book.kecheng || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="版本">{{ book.banben || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="教材版本">{{ book.jiaocaibanben || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="适用专业">{{ book.shiyongzhuanye || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="适用课程">{{ book.shiyongkecheng || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="新旧程度">
                   <el-tag type="warning" size="small">{{ book.xinjiuchengdu }}</el-tag>
                 </el-descriptions-item>

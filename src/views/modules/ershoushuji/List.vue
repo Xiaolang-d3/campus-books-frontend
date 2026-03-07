@@ -5,6 +5,12 @@
         <el-form-item label="书籍名称">
           <el-input v-model="searchForm.shujimingcheng" placeholder="请输入书籍名称" clearable />
         </el-form-item>
+        <el-form-item label="ISBN">
+          <el-input v-model="searchForm.isbn" placeholder="请输入ISBN" clearable />
+        </el-form-item>
+        <el-form-item label="课程编号">
+          <el-input v-model="searchForm.kechengbianhao" placeholder="请输入课程编号" clearable />
+        </el-form-item>
         <el-form-item label="书籍分类">
           <el-select v-model="searchForm.shujifenlei" placeholder="全部" clearable>
             <el-option v-for="category in categories" :key="category" :label="category" :value="category" />
@@ -42,6 +48,8 @@
         <el-table-column type="selection" width="50" />
         <el-table-column prop="shujibianhao" label="书籍编号" min-width="120" />
         <el-table-column prop="shujimingcheng" label="书籍名称" min-width="180" />
+        <el-table-column prop="isbn" label="ISBN" min-width="150" />
+        <el-table-column prop="kechengbianhao" label="课程编号" min-width="130" />
         <el-table-column label="封面" width="100">
           <template #default="{ row }">
             <el-image v-if="row.shujifengmian" :src="getImg(row.shujifengmian)" style="width: 60px; height: 60px" fit="cover" />
@@ -59,6 +67,13 @@
           <template #default="{ row }">
             <div>{{ row.kecheng || '-' }}</div>
             <div style="color: #909399">{{ row.banben || '-' }}</div>
+            <div style="color: #409eff">{{ row.jiaocaibanben || '-' }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="适用专业/课程" min-width="220">
+          <template #default="{ row }">
+            <div>{{ row.shiyongzhuanye || '-' }}</div>
+            <div style="color: #909399">{{ row.shiyongkecheng || '-' }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="xinjiuchengdu" label="新旧程度" width="100" />
@@ -98,6 +113,12 @@
         <el-form-item label="书籍名称">
           <el-input v-model="form.shujimingcheng" />
         </el-form-item>
+        <el-form-item label="ISBN">
+          <el-input v-model="form.isbn" />
+        </el-form-item>
+        <el-form-item label="课程编号">
+          <el-input v-model="form.kechengbianhao" />
+        </el-form-item>
         <el-form-item label="书籍封面">
           <FileUpload v-model="form.shujifengmian" />
         </el-form-item>
@@ -128,6 +149,15 @@
           <el-select v-model="form.banben" placeholder="请选择版本">
             <el-option v-for="version in formVersions" :key="version" :label="version" :value="version" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="教材版本">
+          <el-input v-model="form.jiaocaibanben" placeholder="如 第4版 / 2023版" />
+        </el-form-item>
+        <el-form-item label="适用专业">
+          <el-input v-model="form.shiyongzhuanye" placeholder="可填写多个专业，用顿号分隔" />
+        </el-form-item>
+        <el-form-item label="适用课程">
+          <el-input v-model="form.shiyongkecheng" placeholder="可填写多个课程，用顿号分隔" />
         </el-form-item>
         <el-form-item label="新旧程度">
           <el-select v-model="form.xinjiuchengdu" placeholder="请选择">
@@ -169,6 +199,8 @@ const categories = ref([])
 const colleges = getColleges()
 const searchForm = reactive({
   shujimingcheng: '',
+  isbn: '',
+  kechengbianhao: '',
   shujifenlei: '',
   xueyuan: '',
   zhuanye: '',
@@ -206,6 +238,8 @@ const loadData = async () => {
 const resetSearch = () => {
   Object.assign(searchForm, {
     shujimingcheng: '',
+    isbn: '',
+    kechengbianhao: '',
     shujifenlei: '',
     xueyuan: '',
     zhuanye: '',
@@ -246,13 +280,18 @@ const handleFormCourseChange = () => {
 }
 
 const createDefaultForm = () => ({
-  shujibianhao: '',
-  shujimingcheng: '',
-  shujifengmian: '',
-  shujizuozhe: '',
-  shujifenlei: '',
-  xueyuan: '',
-  zhuanye: '',
+      shujibianhao: '',
+      shujimingcheng: '',
+      isbn: '',
+      kechengbianhao: '',
+      shujifengmian: '',
+      shujizuozhe: '',
+      jiaocaibanben: '',
+      shiyongzhuanye: '',
+      shiyongkecheng: '',
+      shujifenlei: '',
+      xueyuan: '',
+      zhuanye: '',
   kecheng: '',
   banben: '',
   xinjiuchengdu: '全新',
@@ -271,6 +310,11 @@ const openDialog = (row) => {
 const validateForm = () => {
   const requiredFields = [
     ['shujimingcheng', '书籍名称'],
+    ['isbn', 'ISBN'],
+    ['kechengbianhao', '课程编号'],
+    ['jiaocaibanben', '教材版本'],
+    ['shiyongzhuanye', '适用专业'],
+    ['shiyongkecheng', '适用课程'],
     ['shujifenlei', '书籍分类'],
     ['xueyuan', '学院'],
     ['zhuanye', '专业'],
