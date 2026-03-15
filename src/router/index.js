@@ -35,7 +35,7 @@ const routes = [
     component: () => import('@/views/front/FrontLayout.vue'),
     redirect: '/front/home',
     children: [
-      { path: 'home', name: '前台首页', component: () => import('@/views/front/FrontHome.vue') },
+      { path: 'home', name: '前台首页', component: () => import('@/views/front/MinimalHome.vue') },
       { path: 'books', name: '书籍列表', component: () => import('@/views/front/BookList.vue') },
       { path: 'book/:id', name: '书籍详情', component: () => import('@/views/front/BookDetail.vue') },
       { path: 'cart', name: '购物车', component: () => import('@/views/front/CartPage.vue'), meta: { auth: true } },

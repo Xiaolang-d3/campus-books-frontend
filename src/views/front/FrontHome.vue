@@ -192,59 +192,66 @@ onMounted(async () => {
 
 /* 轮播图样式优化 */
 .banner-carousel {
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  margin-bottom: 32px;
+}
+
+.banner-carousel :deep(.el-carousel__item) {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
 }
 
 /* 公告栏样式 */
 .notice-section {
-  margin-bottom: 16px;
-  animation: slideDown 0.5s ease-out;
+  margin-bottom: 24px;
+  animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .notice-marquee {
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff4d6 100%);
+  border: 2px solid #ffe7ba;
+  border-radius: 12px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(255, 193, 7, 0.15);
 }
 
 .notice-icon {
   color: #faad14;
-  font-size: 20px;
-  animation: ring 2s ease-in-out infinite;
+  font-size: 24px;
+  animation: ring 2.5s ease-in-out infinite;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(250, 173, 20, 0.3));
 }
 
 @keyframes ring {
   0%, 100% { transform: rotate(0deg); }
-  10%, 30% { transform: rotate(-10deg); }
-  20%, 40% { transform: rotate(10deg); }
+  10%, 30% { transform: rotate(-12deg); }
+  20%, 40% { transform: rotate(12deg); }
 }
 
 .marquee-content {
   flex: 1;
   overflow: hidden;
   position: relative;
-  height: 24px;
-  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  height: 28px;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
 .marquee-text {
   display: flex;
   white-space: nowrap;
   animation: marquee linear infinite;
-  gap: 80px;
+  gap: 100px;
 }
 
 @keyframes marquee {
@@ -253,58 +260,91 @@ onMounted(async () => {
 }
 
 .marquee-item {
-  color: #000;
-  font-size: 14px;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
 }
 
 .marquee-item:hover {
-  color: #409eff;
-  transform: scale(1.05);
+  color: #fa8c16;
+  transform: scale(1.08);
 }
 
 .section {
-  margin-top: 32px;
-  animation: fadeIn 0.5s ease-in;
+  margin-top: 48px;
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .section-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 16px;
+  border-bottom: 3px solid #f0f0f0;
   color: #1a1a1a;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #409eff 0%, #667eea 100%);
+  border-radius: 2px;
 }
 
 .book-card-skeleton {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  border-radius: 16px;
 }
 
 .book-card {
   cursor: pointer;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  margin-bottom: 20px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #f0f0f0;
+  border: 2px solid #f0f0f0;
   background: #fff;
+  position: relative;
+}
+
+.book-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, #409eff, #667eea);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 
 .book-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  border-color: #e0e0e0;
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+}
+
+.book-card:hover::before {
+  opacity: 1;
 }
 
 .book-card :deep(.el-card__body) {
@@ -322,11 +362,11 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .book-card:hover .book-img {
-  transform: scale(1.08);
+  transform: scale(1.15);
 }
 
 .book-overlay {
@@ -342,49 +382,56 @@ onMounted(async () => {
 }
 
 .book-badges {
-  padding: 12px;
+  padding: 14px;
   display: flex;
   gap: 8px;
 }
 
 .badge {
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 6px 14px;
+  border-radius: 24px;
   font-size: 12px;
-  font-weight: 600;
-  backdrop-filter: blur(8px);
+  font-weight: 700;
+  backdrop-filter: blur(12px);
   pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .badge-sold-out {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: #fff;
 }
 
 .badge-hot {
   background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* 快速加入购物车按钮 */
 .quick-cart-btn {
-  margin: 12px;
-  padding: 10px 16px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
+  margin: 14px;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(16px);
   color: white;
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
   opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
+  transform: translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .book-card:hover .quick-cart-btn {
@@ -393,12 +440,13 @@ onMounted(async () => {
 }
 
 .quick-cart-btn:hover {
-  background: #409eff;
-  transform: translateY(0) scale(1.02);
+  background: linear-gradient(135deg, #409eff 0%, #667eea 100%);
+  transform: translateY(0) scale(1.05);
+  box-shadow: 0 12px 32px rgba(64, 158, 255, 0.4);
 }
 
 .book-info {
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -407,13 +455,13 @@ onMounted(async () => {
 .book-header {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .book-name {
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 22px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
   color: #1a1a1a;
   margin: 0;
   overflow: hidden;
@@ -421,28 +469,39 @@ onMounted(async () => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  min-height: 44px;
+  min-height: 48px;
+  transition: color 0.3s;
+}
+
+.book-card:hover .book-name {
+  color: #409eff;
 }
 
 .book-price {
-  font-size: 22px;
-  font-weight: 700;
-  color: #ff4d4f;
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1;
 }
 
 .book-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #f5f5f5;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 2px solid #f5f5f5;
 }
 
 .book-tag {
-  font-size: 12px;
+  font-size: 13px;
   color: #595959;
-  font-weight: 500;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: #f5f5f5;
+  border-radius: 6px;
 }
 
 .book-divider {
@@ -452,35 +511,36 @@ onMounted(async () => {
 
 .book-condition {
   color: #8c8c8c;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .banner-carousel {
-    border-radius: 8px;
+    border-radius: 12px;
+    margin-bottom: 24px;
   }
 
   .notice-marquee {
-    padding: 8px;
+    padding: 10px 16px;
   }
 
   .notice-icon {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .marquee-item {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .section {
-    margin-top: 24px;
+    margin-top: 32px;
   }
 
   .section-title {
-    font-size: 18px;
-    margin-bottom: 16px;
+    font-size: 22px;
+    margin-bottom: 20px;
   }
 
   .book-img-wrapper {
@@ -488,31 +548,31 @@ onMounted(async () => {
   }
 
   .quick-cart-btn {
-    font-size: 12px;
-    padding: 8px 12px;
+    font-size: 13px;
+    padding: 10px 16px;
   }
 
   .book-info {
-    padding: 12px;
-    gap: 8px;
+    padding: 14px;
+    gap: 10px;
   }
 
   .book-name {
-    font-size: 14px;
-    line-height: 20px;
-    min-height: 40px;
+    font-size: 15px;
+    line-height: 22px;
+    min-height: 44px;
   }
 
   .book-price {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .book-tag {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .book-condition {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 </style>
