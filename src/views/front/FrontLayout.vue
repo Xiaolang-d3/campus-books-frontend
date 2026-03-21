@@ -120,6 +120,10 @@
             登录 / 注册
           </a>
           <template v-else>
+            <a class="mobile-nav__link" @click="$router.push('/front/ai-chat'); showMobileMenu = false">
+              <el-icon><MagicStick /></el-icon>
+              AI 助手
+            </a>
             <a class="mobile-nav__link" @click="$router.push('/front/center'); showMobileMenu = false">
               <el-icon><User /></el-icon>
               个人中心
@@ -146,12 +150,12 @@
     </transition>
 
     <!-- 页面内容 -->
-    <el-main class="front-main">
+    <el-main :class="['front-main', { 'front-main--chat': route.path === '/front/ai-chat' }]">
       <router-view />
     </el-main>
 
     <!-- 底部 -->
-    <el-footer class="front-footer">
+    <el-footer v-if="route.path !== '/front/ai-chat'" class="front-footer">
       <div class="footer-inner">
         <div class="footer-info">
           <span class="footer-logo-text">校园二手专业书籍在线交易平台</span>
@@ -583,6 +587,11 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   padding: 32px 24px;
 }
 
+.front-main--chat {
+  max-width: 1200px;
+  padding: 20px 24px 0;
+}
+
 .front-footer {
   --el-footer-height: auto;
   --el-footer-padding: 0;
@@ -671,6 +680,10 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
     padding-bottom: 24px;
   }
 
+  .front-main--chat {
+    padding: 0;
+  }
+
   .front-footer {
     padding: 20px 0;
   }
@@ -710,6 +723,10 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 
   .front-main {
     padding: 12px;
+  }
+
+  .front-main--chat {
+    padding: 0;
   }
 }
 </style>

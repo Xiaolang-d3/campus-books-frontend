@@ -503,7 +503,8 @@ onMounted(() => {
 .ai-chat-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 64px - 64px);
+  min-height: calc(100vh - 64px - 20px);
+  height: calc(100vh - 64px - 20px);
   max-width: 920px;
   margin: 0 auto;
   background:
@@ -1219,9 +1220,10 @@ onMounted(() => {
 /* 响应式 */
 @media (max-width: 768px) {
   .ai-chat-page {
+    min-height: calc(100vh - 56px);
     height: calc(100vh - 56px);
     border-radius: 0;
-    margin: -16px;
+    margin: 0;
     max-width: none;
   }
 
