@@ -10,8 +10,7 @@
     <!-- 侧边栏 -->
     <el-aside
       :width="isCollapse ? '0px' : isMobile ? '260px' : '220px'"
-      :class="['admin-aside', { 'is-collapsed': isCollapse }]"
-      class="admin-aside--drawer"
+      :class="['admin-aside', { 'is-collapsed': isCollapse, 'admin-aside--drawer': isMobile }]"
     >
       <div class="logo">
         <span class="logo-text" v-show="!isCollapse">二手书籍交易平台</span>
@@ -184,7 +183,6 @@ onUnmounted(() => {
   overflow-x: hidden;
   overflow-y: auto;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
   z-index: 2001;
   flex-shrink: 0;
   height: 100vh;
