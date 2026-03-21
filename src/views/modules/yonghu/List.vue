@@ -3,19 +3,23 @@
     <el-card>
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="学号">
-          <el-input v-model="searchForm.yonghuzhanghao" placeholder="请输入学号" clearable />
+          <el-input v-model="searchForm.student_no" placeholder="请输入学号" clearable />
         </el-form-item>
         <el-form-item label="姓名">
-          <el-input v-model="searchForm.yonghuxingming" placeholder="请输入姓名" clearable />
+          <el-input v-model="searchForm.name" placeholder="请输入姓名" clearable />
         </el-form-item>
         <el-form-item label="学院">
-          <el-input v-model="searchForm.xueyuan" placeholder="请输入学院" clearable />
+          <el-select v-model="searchForm.college_id" placeholder="全部" clearable @change="handleCollegeChange">
+            <el-option v-for="c in colleges" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="专业">
-          <el-input v-model="searchForm.zhuanye" placeholder="请输入专业" clearable />
+          <el-select v-model="searchForm.major_id" placeholder="全部" clearable>
+            <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="年级">
-          <el-input v-model="searchForm.nianji" placeholder="请输入年级" clearable />
+          <el-input v-model="searchForm.grade" placeholder="请输入年级" clearable />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="loadData">查询</el-button>
@@ -27,14 +31,21 @@
 
       <el-table :data="tableData" @selection-change="handleSelectionChange" border stripe>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="yonghuzhanghao" label="学号" min-width="120" />
-        <el-table-column prop="yonghuxingming" label="姓名" min-width="120" />
-        <el-table-column prop="xueyuan" label="学院" min-width="140" />
-        <el-table-column prop="zhuanye" label="专业" min-width="140" />
-        <el-table-column prop="nianji" label="年级" min-width="110" />
-        <el-table-column prop="xingbie" label="性别" width="80" />
-        <el-table-column prop="dianhuahaoma" label="电话号码" min-width="140" />
-        <el-table-column prop="money" label="余额" width="100" />
+        <el-table-column prop="student_no" label="学号" min-width="120" />
+        <el-table-column prop="name" label="姓名" min-width="120" />
+        <el-table-column prop="college_name" label="学院" min-width="140" />
+        <el-table-column prop="major_name" label="专业" min-width="140" />
+        <el-table-column prop="grade" label="年级" min-width="110" />
+        <el-table-column prop="gender" label="性别" width="80" />
+        <el-table-column prop="phone" label="电话" min-width="140" />
+        <el-table-column label="头像" width="80">
+          <template #default="{ row }">
+            <el-avatar v-if="row.avatar" :src="getImg(row.avatar)" :size="40" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="balance" label="余额" width="100">
+          <template #default="{ row }">¥{{ row.balance }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="openDialog(row)">编辑</el-button>
@@ -57,34 +68,41 @@
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="560px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="学号">
-          <el-input v-model="form.yonghuzhanghao" :disabled="isEdit" />
+          <el-input v-model="form.student_no" :disabled="isEdit" />
         </el-form-item>
         <el-form-item label="姓名">
-          <el-input v-model="form.yonghuxingming" />
+          <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="form.mima" type="password" show-password />
+          <el-input v-model="form.password" type="password" show-password :placeholder="isEdit ? '不修改请留空' : ''" />
         </el-form-item>
         <el-form-item label="学院">
-          <el-input v-model="form.xueyuan" />
+          <el-select v-model="form.college_id" placeholder="请选择学院" @change="handleFormCollegeChange">
+            <el-option v-for="c in colleges" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="专业">
-          <el-input v-model="form.zhuanye" />
+          <el-select v-model="form.major_id" placeholder="请选择专业">
+            <el-option v-for="m in formMajors" :key="m.id" :label="m.name" :value="m.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="年级">
-          <el-input v-model="form.nianji" />
+          <el-input v-model="form.grade" placeholder="如 2022级" />
         </el-form-item>
         <el-form-item label="性别">
-          <el-radio-group v-model="form.xingbie">
+          <el-radio-group v-model="form.gender">
             <el-radio value="男">男</el-radio>
             <el-radio value="女">女</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="电话号码">
-          <el-input v-model="form.dianhuahaoma" />
+        <el-form-item label="电话">
+          <el-input v-model="form.phone" />
+        </el-form-item>
+        <el-form-item label="头像">
+          <FileUpload v-model="form.avatar" />
         </el-form-item>
         <el-form-item label="余额">
-          <el-input-number v-model="form.money" :min="0" />
+          <el-input-number v-model="form.balance" :min="0" :precision="2" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -96,17 +114,26 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
+import FileUpload from '@/components/FileUpload.vue'
+
+const colleges = ref([])
+const majors = ref([])
 
 const searchForm = reactive({
-  yonghuzhanghao: '',
-  yonghuxingming: '',
-  xueyuan: '',
-  zhuanye: '',
-  nianji: '',
+  student_no: '',
+  name: '',
+  college_id: '',
+  major_id: '',
+  grade: '',
 })
+const majorOptions = computed(() => {
+  if (!searchForm.college_id) return majors.value
+  return majors.value.filter(m => m.college_id === searchForm.college_id)
+})
+
 const tableData = ref([])
 const page = ref(1)
 const limit = ref(10)
@@ -115,6 +142,31 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const form = ref({})
 const selectedIds = ref([])
+
+const formMajors = computed(() => {
+  if (!form.value.college_id) return majors.value
+  return majors.value.filter(m => m.college_id === form.value.college_id)
+})
+
+const getImg = (value) => (value ? (value.startsWith('http') ? value : `/api/file/download/${value}`) : '')
+
+const loadColleges = async () => {
+  try {
+    const { data: res } = await http.get('/college/list')
+    if (res.code === 0) {
+      colleges.value = res.data || []
+    }
+  } catch { colleges.value = [] }
+}
+
+const loadMajors = async () => {
+  try {
+    const { data: res } = await http.get('/major/list')
+    if (res.code === 0) {
+      majors.value = res.data || []
+    }
+  } catch { majors.value = [] }
+}
 
 const loadData = async () => {
   const { data: res } = await http.get('/yonghu/page', {
@@ -128,40 +180,49 @@ const loadData = async () => {
 
 const resetSearch = () => {
   Object.assign(searchForm, {
-    yonghuzhanghao: '',
-    yonghuxingming: '',
-    xueyuan: '',
-    zhuanye: '',
-    nianji: '',
+    student_no: '',
+    name: '',
+    college_id: '',
+    major_id: '',
+    grade: '',
   })
   loadData()
+}
+
+const handleCollegeChange = () => {
+  searchForm.major_id = ''
+}
+
+const handleFormCollegeChange = () => {
+  form.value.major_id = ''
 }
 
 const openDialog = (row) => {
   isEdit.value = !!row
   form.value = row
-    ? { ...row }
+    ? { ...row, password: '' }
     : {
-        yonghuzhanghao: '',
-        yonghuxingming: '',
-        mima: '123456',
-        xueyuan: '',
-        zhuanye: '',
-        nianji: '',
-        xingbie: '男',
-        dianhuahaoma: '',
-        money: 0,
+        student_no: '',
+        name: '',
+        password: '123456',
+        gender: '男',
+        phone: '',
+        avatar: '',
+        college_id: '',
+        major_id: '',
+        grade: '',
+        balance: 0,
       }
   dialogVisible.value = true
 }
 
 const validateForm = () => {
-  if (!form.value.yonghuzhanghao || !form.value.yonghuxingming || !form.value.mima) {
-    ElMessage.error('请完整填写学号、姓名和密码')
+  if (!form.value.student_no || !form.value.name) {
+    ElMessage.error('请完整填写学号和姓名')
     return false
   }
-  if (!form.value.xueyuan || !form.value.zhuanye || !form.value.nianji) {
-    ElMessage.error('请完整填写学院、专业和年级')
+  if (!isEdit.value && !form.value.password) {
+    ElMessage.error('请填写密码')
     return false
   }
   return true
@@ -169,8 +230,10 @@ const validateForm = () => {
 
 const handleSave = async () => {
   if (!validateForm()) return
+  const payload = { ...form.value }
+  if (!payload.password) delete payload.password
   const url = isEdit.value ? '/yonghu/update' : '/yonghu/save'
-  const { data: res } = await http.post(url, form.value)
+  const { data: res } = await http.post(url, payload)
   if (res.code === 0) {
     ElMessage.success('操作成功')
     dialogVisible.value = false
@@ -206,5 +269,8 @@ const handleBatchDelete = async () => {
   }
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  await Promise.all([loadColleges(), loadMajors()])
+  loadData()
+})
 </script>

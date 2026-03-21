@@ -48,7 +48,7 @@
             <span>书籍管理</span>
           </template>
           <el-menu-item index="/shujifenlei" v-if="role === 'admin'">书籍分类</el-menu-item>
-          <el-menu-item index="/ershoushuji">二手书籍</el-menu-item>
+          <el-menu-item index="/book">二手书籍</el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="order-mgmt">
@@ -76,7 +76,7 @@
           </el-sub-menu>
         </template>
 
-        <el-menu-item index="/discussershoushuji">
+        <el-menu-item index="/review">书籍评论</el-menu-item>
           <el-icon><ChatDotRound /></el-icon>
           <span>书籍评论</span>
         </el-menu-item>

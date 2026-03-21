@@ -16,30 +16,30 @@
         </template>
 
         <template #default>
-          <div v-if="orderInfo.orderid" class="order-info">
+          <div v-if="orderInfo.order_no" class="order-info">
             <div class="info-row">
               <span class="label">订单号：</span>
-              <span class="value">{{ orderInfo.orderid }}</span>
+              <span class="value">{{ orderInfo.order_no }}</span>
             </div>
             <div class="info-row">
               <span class="label">商品名称：</span>
-              <span class="value">{{ orderInfo.goodname }}</span>
+              <span class="value">{{ orderInfo.book_title }}</span>
             </div>
             <div class="info-row">
               <span class="label">购买数量：</span>
-              <span class="value">{{ orderInfo.buynumber }}</span>
+              <span class="value">{{ orderInfo.quantity }}</span>
             </div>
             <div class="info-row">
               <span class="label">收货地址：</span>
-              <span class="value">{{ orderInfo.address }}</span>
+              <span class="value">{{ orderInfo.receiver_address }}</span>
             </div>
             <div class="info-row">
               <span class="label">收货人：</span>
-              <span class="value">{{ orderInfo.consignee }} {{ orderInfo.tel }}</span>
+              <span class="value">{{ orderInfo.receiver_name }} {{ orderInfo.receiver_phone }}</span>
             </div>
             <div class="total-row">
               <span class="label">应付金额：</span>
-              <span class="amount">¥{{ orderInfo.total }}</span>
+              <span class="amount">¥{{ orderInfo.total_amount }}</span>
             </div>
           </div>
         </template>
@@ -82,7 +82,7 @@
       </div>
 
       <el-alert
-        v-if="balance < orderInfo.total"
+        v-if="balance < orderInfo.total_amount"
         title="余额不足，无法支付"
         type="error"
         show-icon
@@ -97,9 +97,9 @@
           size="large"
           @click="handlePay"
           :loading="paying"
-          :disabled="balance < orderInfo.total"
+          :disabled="balance < orderInfo.total_amount"
         >
-          确认支付 ¥{{ orderInfo.total }}
+          确认支付 ¥{{ orderInfo.total_amount }}
         </el-button>
       </div>
     </el-card>
@@ -124,7 +124,7 @@ const paymentMethod = ref('balance')
 const loadOrder = async () => {
   loading.value = true
   try {
-    const res = await http.get(`/orders/info/${route.params.id}`)
+    const res = await http.get(`/order/info/${route.params.id}`)
     orderInfo.value = res.data?.data || {}
 
     if (orderInfo.value.status !== '未支付') {
@@ -149,14 +149,14 @@ const loadBalance = async () => {
 }
 
 const handlePay = async () => {
-  if (balance.value < orderInfo.value.total) {
+  if (balance.value < orderInfo.value.total_amount) {
     ElMessage.warning('余额不足，无法支付')
     return
   }
 
   try {
     await ElMessageBox.confirm(
-      `确认支付 ¥${orderInfo.value.total} 吗？`,
+      `确认支付 ¥${orderInfo.value.total_amount} 吗？`,
       '确认支付',
       {
         confirmButtonText: '确认',
@@ -166,7 +166,7 @@ const handlePay = async () => {
     )
 
     paying.value = true
-    await http.post('/wallet/pay', { orderid: orderInfo.value.orderid })
+    await http.post('/wallet/pay', { orderid: orderInfo.value.order_no })
 
     ElMessage.success('支付成功')
 

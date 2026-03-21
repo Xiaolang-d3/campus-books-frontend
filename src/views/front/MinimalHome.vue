@@ -47,16 +47,16 @@
       <div class="categories-grid">
         <div 
           v-for="category in categories.slice(0, 6)" 
-          :key="category"
+          :key="category.id"
           class="category-card"
           @click="searchByCategory(category)"
         >
           <div class="category-icon">
             <el-icon class="category-icon-el" :size="32">
-              <component :is="getCategoryIcon(category)" />
+              <component :is="getCategoryIcon(category.name)" />
             </el-icon>
           </div>
-          <div class="category-name">{{ category }}</div>
+          <div class="category-name">{{ category.name }}</div>
         </div>
       </div>
     </section>
@@ -198,16 +198,18 @@ const quickSearch = (tag) => {
   router.push({ path: '/front/books', query: { keyword: tag } })
 }
 
+/** 分类接口返回对象 { id, name, ... }，列表页用 category_id 筛选 */
 const searchByCategory = (category) => {
-  router.push({ path: '/front/books', query: { shujifenlei: category } })
+  if (!category?.id) return
+  router.push({ path: '/front/books', query: { category_id: String(category.id) } })
 }
 
 onMounted(async () => {
   loading.value = true
   try {
     const [booksRes, categoriesRes] = await Promise.all([
-      http.get('/ershoushuji/list', { params: { page: 1, limit: 8, sort: 'addtime', order: 'desc' } }),
-      http.get('/option/shujifenlei/shujifenlei')
+      http.get('/book/list', { params: { page: 1, limit: 8, sort: 'addtime', order: 'desc' } }),
+      http.get('/bookCategory/option')
     ])
     books.value = booksRes.data?.data?.list || []
     total.value = booksRes.data?.data?.total || 0

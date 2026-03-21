@@ -5,9 +5,9 @@
       <el-row :gutter="16">
         <el-col :span="6" v-for="item in list" :key="item.id">
           <el-card shadow="hover" class="fav-card">
-            <img :src="getImg(item.picture)" class="fav-img" @click="$router.push(`/front/book/${item.refid}`)" />
+            <img :src="getImg(item.picture)" class="fav-img" @click="$router.push(`/front/book/${item.book_id}`)" />
             <div class="fav-info">
-              <div class="fav-name" @click="$router.push(`/front/book/${item.refid}`)">{{ item.name }}</div>
+              <div class="fav-name" @click="$router.push(`/front/book/${item.book_id}`)">{{ item.name }}</div>
               <el-button text type="danger" size="small" @click="removeFav(item)">取消收藏</el-button>
             </div>
           </el-card>
@@ -32,13 +32,13 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 
 const loadData = async () => {
   const uid = localStorage.getItem('userid')
-  const res = await http.get('/storeup/list', { params: { page: page.value, limit: 12, userid: uid, tablename: 'ershoushuji' } })
+  const res = await http.get('/favorite/list', { params: { page: page.value, limit: 12, userid: uid } })
   list.value = res.data?.data?.list || []
   total.value = res.data?.data?.total || 0
 }
 
 const removeFav = async (item) => {
-  await http.post('/storeup/delete', [item.id])
+  await http.post('/favorite/delete', [item.id])
   ElMessage.success('已取消收藏')
   loadData()
 }

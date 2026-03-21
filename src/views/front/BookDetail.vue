@@ -6,14 +6,14 @@
           <el-row :gutter="28">
             <el-col :xs="24" :md="10">
               <div class="book-image-wrapper">
-                <img :src="getImg(book.shujifengmian)" class="book-image" />
+                <img :src="getImg(book.cover)" class="book-image" />
                 <div v-if="!book.kucun || book.kucun <= 0" class="image-overlay">已售罄</div>
               </div>
             </el-col>
 
             <el-col :xs="24" :md="14">
               <div class="book-header">
-                <h1 class="book-title">{{ book.shujimingcheng }}</h1>
+                <h1 class="book-title">{{ book.title }}</h1>
                 <div class="price">¥{{ book.price }}</div>
               </div>
 
@@ -21,23 +21,13 @@
                 {{ resolveHierarchyPath(book) }}
               </div>
 
-              <el-descriptions :column="2" border class="book-descriptions">
-                <el-descriptions-item label="书籍编号">{{ book.shujibianhao || '-' }}</el-descriptions-item>
+                <el-descriptions :column="2" border class="book-descriptions">
                 <el-descriptions-item label="ISBN">{{ book.isbn || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="作者">{{ book.shujizuozhe || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="课程编号">{{ book.kechengbianhao || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="书籍分类">{{ book.shujifenlei || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="学院">{{ book.xueyuan || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="专业">{{ book.zhuanye || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="课程">{{ book.kecheng || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="版本">{{ book.banben || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="教材版本">{{ book.jiaocaibanben || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="适用专业">{{ book.shiyongzhuanye || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="适用课程">{{ book.shiyongkecheng || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="成色">{{ book.xinjiuchengdu || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="出版社">{{ book.chubanshe || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="上架日期">{{ formatDate(book.shangjiariqi) || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="发布人">{{ book.faburenxingming || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="作者">{{ book.author || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="书籍分类">{{ book.category_name || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="成色">{{ book.condition_name || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="出版社">{{ book.publisher || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="发布人">{{ book.seller_name || '-' }}</el-descriptions-item>
               </el-descriptions>
 
               <div class="action-section">
@@ -51,8 +41,8 @@
                   <el-input-number
                     v-model="buyNum"
                     :min="1"
-                    :max="book.kucun || 1"
-                    :disabled="!book.kucun || book.kucun <= 0"
+                    :max="book.stock || 1"
+                    :disabled="!book.stock || book.stock <= 0"
                   />
                 </div>
 
@@ -61,7 +51,7 @@
                     type="warning"
                     size="large"
                     :loading="cartLoading"
-                    :disabled="!book.kucun || book.kucun <= 0"
+                    :disabled="!book.stock || book.stock <= 0"
                     @click="addToCart"
                   >
                     加入购物车
@@ -70,7 +60,7 @@
                     type="danger"
                     size="large"
                     :loading="buyLoading"
-                    :disabled="!book.kucun || book.kucun <= 0"
+                    :disabled="!book.stock || book.stock <= 0"
                     @click="buyNow"
                   >
                     立即购买
@@ -177,7 +167,7 @@ const formatDate = (value) => {
 const loadBook = async () => {
   loading.value = true
   try {
-    const { data: res } = await http.get(`/ershoushuji/detail/${route.params.id}`)
+    const { data: res } = await http.get(`/book/detail/${route.params.id}`)
     if (res.code === 0) {
       book.value = res.data
     }
@@ -190,8 +180,8 @@ const loadBook = async () => {
 
 const loadComments = async () => {
   try {
-    const { data: res } = await http.get('/discussershoushuji/list', {
-      params: { page: 1, limit: 100, refid: route.params.id },
+    const { data: res } = await http.get('/review/list', {
+      params: { page: 1, limit: 100, book_id: route.params.id },
     })
     comments.value = res.data?.list || res.data?.data?.list || []
   } catch {
@@ -233,11 +223,10 @@ const addToCart = async () => {
   cartLoading.value = true
   try {
     const { data: res } = await http.post('/cart/add', {
-      tablename: 'ershoushuji',
-      goodid: book.value.id,
-      goodname: book.value.shujimingcheng,
-      picture: book.value.shujifengmian,
-      buynumber: buyNum.value,
+      book_id: book.value.id,
+      book_title: book.value.title,
+      book_cover: book.value.cover,
+      quantity: buyNum.value,
       price: book.value.price,
       userid: Number(localStorage.getItem('userid')),
     })
@@ -267,8 +256,8 @@ const toggleFav = async () => {
   try {
     const uid = Number(localStorage.getItem('userid'))
     if (isFav.value) {
-      const { data: listRes } = await http.get('/storeup/list', {
-        params: { page: 1, limit: 1, userid: uid, refid: route.params.id, tablename: 'ershoushuji' },
+      const { data: listRes } = await http.get('/favorite/list', {
+        params: { page: 1, limit: 1, userid: uid, book_id: route.params.id },
       })
       const item = listRes.data?.list?.[0] || listRes.data?.data?.list?.[0]
       if (item) {
@@ -277,12 +266,11 @@ const toggleFav = async () => {
       isFav.value = false
       ElMessage.success('已取消收藏')
     } else {
-      const { data: res } = await http.post('/storeup/add', {
+      const { data: res } = await http.post('/favorite/add', {
         userid: uid,
-        refid: book.value.id,
-        tablename: 'ershoushuji',
-        name: book.value.shujimingcheng,
-        picture: book.value.shujifengmian,
+        book_id: book.value.id,
+        name: book.value.title,
+        picture: book.value.cover,
         type: '1',
       })
       if (res.code === 0) {
@@ -307,10 +295,9 @@ const submitComment = async () => {
 
   commentLoading.value = true
   try {
-    const { data: res } = await http.post('/discussershoushuji/add', {
-      refid: Number(route.params.id),
+    const { data: res } = await http.post('/review/add', {
+      book_id: Number(route.params.id),
       userid: Number(localStorage.getItem('userid')),
-      nickname: localStorage.getItem('username'),
       content: commentText.value.trim(),
     })
     if (res.code === 0) {

@@ -204,9 +204,9 @@ const loadUserInfo = async () => {
     const uid = localStorage.getItem('userid')
     const res = await http.get(`/yonghu/info/${uid}`)
     if (res.data?.code === 0 && res.data?.data) {
-      if (res.data.data.touxiang) {
-        userAvatar.value = res.data.data.touxiang
-        localStorage.setItem('avatar', res.data.data.touxiang)
+      if (res.data.data.avatar) {
+        userAvatar.value = res.data.data.avatar
+        localStorage.setItem('avatar', res.data.data.avatar)
       }
     }
   } catch {}

@@ -49,18 +49,18 @@ const tableData = ref([]); const page = ref(1); const limit = ref(10); const tot
 const dialogVisible = ref(false); const form = ref({}); const selectedIds = ref([])
 
 const loadData = async () => {
-  const { data: res } = await http.get('/discussershoushuji/page', { params: { ...searchForm, page: page.value, limit: limit.value } })
+  const { data: res } = await http.get('/review/page', { params: { ...searchForm, page: page.value, limit: limit.value } })
   if (res.code === 0) { tableData.value = res.data.list; total.value = res.data.total }
 }
 const openReply = (row) => { form.value = { ...row }; dialogVisible.value = true }
 const handleSave = async () => {
-  const { data: res } = await http.post('/discussershoushuji/update', form.value)
+  const { data: res } = await http.post('/review/update', form.value)
   if (res.code === 0) { ElMessage.success('回复成功'); dialogVisible.value = false; loadData() } else ElMessage.error(res.msg)
 }
-const handleDelete = async (id) => { await ElMessageBox.confirm('确定删除？'); const { data: res } = await http.post('/discussershoushuji/delete', [id]); if (res.code === 0) { ElMessage.success('删除成功'); loadData() } }
+const handleDelete = async (id) => { await ElMessageBox.confirm('确定删除？'); const { data: res } = await http.post('/review/delete', [id]); if (res.code === 0) { ElMessage.success('删除成功'); loadData() } }
 const handleBatchDelete = async () => {
   if (!selectedIds.value.length) return ElMessage.warning('请选择数据')
-  await ElMessageBox.confirm(`确定删除${selectedIds.value.length}条？`); const { data: res } = await http.post('/discussershoushuji/delete', selectedIds.value); if (res.code === 0) { ElMessage.success('删除成功'); loadData() }
+  await ElMessageBox.confirm(`确定删除${selectedIds.value.length}条？`); const { data: res } = await http.post('/review/delete', selectedIds.value); if (res.code === 0) { ElMessage.success('删除成功'); loadData() }
 }
 onMounted(loadData)
 </script>

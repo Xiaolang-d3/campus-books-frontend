@@ -61,19 +61,19 @@
                   class="item-checkbox"
                 />
                 <div class="item-image" @click="viewBook(item)">
-                  <img :src="getImg(item.picture)" />
+                  <img :src="getImg(item.book_cover)" />
                 </div>
                 <div class="item-info" @click="viewBook(item)">
-                  <div class="item-name">{{ item.goodname }}</div>
+                  <div class="item-name">{{ item.book_title }}</div>
                 </div>
                 <div class="item-price">
                   <span class="price-label">单价</span>
-                  <span class="price-value">¥{{ item.price }}</span>
+                  <span class="price-value">¥{{ item.book_price }}</span>
                 </div>
                 <div class="item-quantity">
                   <span class="quantity-label">数量</span>
                   <el-input-number
-                    v-model="item.buynumber"
+                    v-model="item.quantity"
                     :min="1"
                     :max="99"
                     size="small"
@@ -82,7 +82,7 @@
                 </div>
                 <div class="item-subtotal">
                   <span class="subtotal-label">小计</span>
-                  <span class="subtotal-value">¥{{ (item.price * item.buynumber).toFixed(2) }}</span>
+                  <span class="subtotal-value">¥{{ (item.book_price * item.quantity).toFixed(2) }}</span>
                 </div>
                 <div class="item-actions">
                   <el-button
@@ -144,11 +144,11 @@ const selectAll = ref(false)
 const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
 
 const totalPrice = computed(() =>
-  selected.value.reduce((s, r) => s + r.price * r.buynumber, 0).toFixed(2)
+  selected.value.reduce((s, r) => s + (r.book_price || 0) * r.quantity, 0).toFixed(2)
 )
 
 const totalQuantity = computed(() =>
-  selected.value.reduce((s, r) => s + r.buynumber, 0)
+  selected.value.reduce((s, r) => s + r.quantity, 0)
 )
 
 const isIndeterminate = computed(() =>
@@ -186,7 +186,7 @@ const toggleSelectAll = (checked) => {
 
 const updateQty = async (row) => {
   try {
-    await http.post('/cart/update', { id: row.id, buynumber: row.buynumber })
+    await http.post('/cart/update', { id: row.id, quantity: row.quantity })
     ElMessage.success('数量已更新')
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || '更新失败')
@@ -253,7 +253,7 @@ const clearCart = async () => {
 }
 
 const viewBook = (item) => {
-  router.push(`/front/book/${item.goodid}`)
+  router.push(`/front/book/${item.book_id}`)
 }
 
 const goCheckout = () => {
@@ -493,7 +493,6 @@ onMounted(loadCart)
   border-color: #2a2a2a;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .cart-container {
     padding: 20px 16px;

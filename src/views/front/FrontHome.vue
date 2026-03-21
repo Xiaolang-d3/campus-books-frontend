@@ -75,18 +75,17 @@
               >
                 <div class="book-img-wrapper">
                   <img
-                    :src="getImg(book.shujifengmian)"
+                    :src="getImg(book.cover)"
                     class="book-img"
                     loading="lazy"
                     @error="handleImgError"
                   />
                   <div class="book-overlay">
                     <div class="book-badges">
-                      <span class="badge badge-sold-out" v-if="book.kucun <= 0">已售罄</span>
-                      <span class="badge badge-hot" v-else-if="book.clicknum > 100">热销</span>
+                      <span class="badge badge-sold-out" v-if="book.stock <= 0">已售罄</span>
                     </div>
                     <!-- 快速加入购物车按钮 -->
-                    <div class="quick-cart-btn" v-if="book.kucun > 0" @click.stop="addToCart(book)">
+                    <div class="quick-cart-btn" v-if="book.stock > 0" @click.stop="addToCart(book)">
                       <el-icon><ShoppingCart /></el-icon>
                       <span>加入购物车</span>
                     </div>
@@ -94,13 +93,13 @@
                 </div>
                 <div class="book-info">
                   <div class="book-header">
-                    <h3 class="book-name" :title="book.shujimingcheng">{{ book.shujimingcheng }}</h3>
+                    <h3 class="book-name" :title="book.title">{{ book.title }}</h3>
                     <div class="book-price">¥{{ book.price }}</div>
                   </div>
                   <div class="book-footer">
-                    <span class="book-tag">{{ book.shujifenlei }}</span>
+                    <span class="book-tag">{{ book.category_name || '-' }}</span>
                     <span class="book-divider">|</span>
-                    <span class="book-condition">{{ book.xinjiuchengdu }}</span>
+                    <span class="book-condition">{{ book.condition_name || '-' }}</span>
                   </div>
                 </div>
               </el-card>
@@ -149,12 +148,11 @@ const addToCart = async (book) => {
   }
 
   try {
-    await http.post('/cart/save', {
-      tablename: 'ershoushuji',
-      goodid: book.id,
-      goodname: book.shujimingcheng,
-      picture: book.shujifengmian,
-      buynumber: 1,
+    await http.post('/cart/add', {
+      book_id: book.id,
+      book_title: book.title,
+      book_cover: book.cover,
+      quantity: 1,
       price: book.price,
       userid: Number(localStorage.getItem('userid'))
     })
@@ -169,7 +167,7 @@ onMounted(async () => {
   try {
     const [configRes, bookRes, newsRes] = await Promise.all([
       http.get('/config/list', { params: { page: 1, limit: 10 } }),
-      http.get('/ershoushuji/list', { params: { page: 1, limit: 8, sort: 'addtime', order: 'desc' } }),
+      http.get('/book/list', { params: { page: 1, limit: 8, sort: 'addtime', order: 'desc' } }),
       http.get('/news/list', { params: { page: 1, limit: 5, sort: 'addtime', order: 'desc' } })
     ])
     banners.value = configRes.data?.data?.list || []

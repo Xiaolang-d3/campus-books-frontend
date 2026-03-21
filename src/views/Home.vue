@@ -37,9 +37,9 @@ const stats = ref({ books: 0, users: 0, orders: 0 })
 onMounted(async () => {
   try {
     const [books, users, orders] = await Promise.all([
-      http.get('/ershoushuji/list', { params: { page: 1, limit: 1 } }),
+      http.get('/book/list', { params: { page: 1, limit: 1 } }),
       http.get('/yonghu/list', { params: { page: 1, limit: 1 } }),
-      http.get('/orders/list', { params: { page: 1, limit: 1 } }),
+      http.get('/order/list', { params: { page: 1, limit: 1 } }),
     ])
 
     stats.value = {

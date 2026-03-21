@@ -4,14 +4,14 @@
       <div class="profile-header">
         <div class="avatar-section">
           <div class="avatar-wrapper">
-            <img 
-              v-if="form.touxiang" 
-              :src="getImg(form.touxiang)" 
+            <img
+              v-if="form.avatar"
+              :src="getImg(form.avatar)"
               class="avatar-image"
               alt="头像"
             />
             <div v-else class="avatar-placeholder">
-              {{ form.yonghuxingming?.[0] || 'U' }}
+              {{ form.name?.[0] || 'U' }}
             </div>
             <div class="avatar-overlay" @click="showUploadDialog = true">
               <el-icon><Camera /></el-icon>
@@ -19,13 +19,13 @@
             </div>
           </div>
           <div class="user-info">
-            <h2 class="user-name">{{ form.yonghuxingming }}</h2>
-            <p class="user-id">学号：{{ form.yonghuzhanghao }}</p>
+            <h2 class="user-name">{{ form.name }}</h2>
+            <p class="user-id">学号：{{ form.student_no }}</p>
           </div>
         </div>
         <div class="wallet-section">
           <div class="wallet-label">账户余额</div>
-          <div class="wallet-amount">¥{{ Number(form.money || 0).toFixed(2) }}</div>
+          <div class="wallet-amount">¥{{ Number(form.balance || 0).toFixed(2) }}</div>
           <el-button size="small" text @click="$router.push('/front/wallet')">
             充值 →
           </el-button>
@@ -47,12 +47,12 @@
         <el-row :gutter="24">
           <el-col :span="12">
             <el-form-item label="姓名">
-              <el-input v-model="form.yonghuxingming" placeholder="请输入姓名" />
+              <el-input v-model="form.name" placeholder="请输入姓名" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="性别">
-              <el-radio-group v-model="form.xingbie">
+              <el-radio-group v-model="form.gender">
                 <el-radio value="男">男</el-radio>
                 <el-radio value="女">女</el-radio>
               </el-radio-group>
@@ -62,26 +62,8 @@
 
         <el-row :gutter="24">
           <el-col :span="12">
-            <el-form-item label="学院">
-              <el-input v-model="form.xueyuan" placeholder="如：计算机学院" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="专业">
-              <el-input v-model="form.zhuanye" placeholder="如：软件工程" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="24">
-          <el-col :span="12">
-            <el-form-item label="年级">
-              <el-input v-model="form.nianji" placeholder="如：2022级" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
             <el-form-item label="电话">
-              <el-input v-model="form.dianhuahaoma" placeholder="请输入手机号" />
+              <el-input v-model="form.phone" placeholder="请输入手机号" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -140,15 +122,12 @@ import { Camera, Upload } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
 const form = ref({
-  yonghuzhanghao: '',
-  yonghuxingming: '',
-  xueyuan: '',
-  zhuanye: '',
-  nianji: '',
-  xingbie: '男',
-  dianhuahaoma: '',
-  money: 0,
-  touxiang: '',
+  student_no: '',
+  name: '',
+  gender: '男',
+  phone: '',
+  avatar: '',
+  balance: 0,
 })
 
 const saving = ref(false)
@@ -207,11 +186,11 @@ const saveAvatar = async () => {
   try {
     const { data: res } = await http.post('/yonghu/update', {
       id: form.value.id,
-      touxiang: tempAvatar.value
+      avatar: tempAvatar.value
     })
     
     if (res.code === 0) {
-      form.value.touxiang = tempAvatar.value
+      form.value.avatar = tempAvatar.value
       localStorage.setItem('avatar', tempAvatar.value)
       ElMessage.success('头像更新成功')
       showUploadDialog.value = false
@@ -219,7 +198,7 @@ const saveAvatar = async () => {
       
       // 触发全局头像更新事件
       window.dispatchEvent(new CustomEvent('avatar-updated', { 
-        detail: { avatar: form.value.touxiang } 
+        detail: { avatar: form.value.avatar } 
       }))
     } else {
       ElMessage.error(res.msg || '更新失败')
@@ -232,25 +211,16 @@ const saveAvatar = async () => {
 }
 
 const save = async () => {
-  const requiredFields = [
-    ['yonghuxingming', '姓名'],
-    ['xueyuan', '学院'],
-    ['zhuanye', '专业'],
-    ['nianji', '年级'],
-  ]
-  
-  for (const [field, label] of requiredFields) {
-    if (!form.value[field]) {
-      ElMessage.error(`${label}不能为空`)
-      return
-    }
-  }
-
   saving.value = true
   try {
-    const { data: res } = await http.post('/yonghu/update', form.value)
+    const { data: res } = await http.post('/yonghu/update', {
+      id: form.value.id,
+      name: form.value.name,
+      gender: form.value.gender,
+      phone: form.value.phone,
+    })
     if (res.code === 0) {
-      localStorage.setItem('username', form.value.yonghuxingming)
+      localStorage.setItem('username', form.value.name)
       ElMessage.success('保存成功')
     } else {
       ElMessage.error(res.msg || '保存失败')

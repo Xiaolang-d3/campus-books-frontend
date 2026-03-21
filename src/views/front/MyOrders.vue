@@ -24,8 +24,8 @@
         <el-table-column label="商品" min-width="220">
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 8px">
-              <img :src="getImg(row.picture)" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px" />
-              <span>{{ row.goodname }}</span>
+              <img :src="getImg(row.book_cover)" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px" />
+              <span>{{ row.book_title }}</span>
             </div>
           </template>
         </el-table-column>
@@ -35,9 +35,9 @@
           </template>
         </el-table-column>
         <el-table-column v-else label="收货人" min-width="140" prop="consignee" />
-        <el-table-column label="数量" prop="buynumber" width="70" />
+        <el-table-column label="数量" prop="quantity" width="70" />
         <el-table-column label="总价" width="100">
-          <template #default="{ row }">￥{{ row.total }}</template>
+          <template #default="{ row }">￥{{ row.total_amount }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -95,7 +95,7 @@ const statusType = (status) =>
 const loadData = async () => {
   const params = { page: page.value, limit: 10, viewType: scopeTab.value === 'sell' ? 'sell' : 'buy' }
   if (statusTab.value) params.status = statusTab.value
-  const res = await http.get('/orders/page', { params })
+    const res = await http.get('/order/page', { params })
   list.value = res.data?.data?.list || []
   total.value = res.data?.data?.total || 0
 }
@@ -111,32 +111,32 @@ const pay = (row) => {
 
 const cancel = async (row) => {
   await ElMessageBox.confirm('确定取消该订单吗？', '提示')
-  await http.post('/orders/update', { id: row.id, status: '已退款' })
+    await http.post('/order/update', { id: row.id, status: '已退款' })
   ElMessage.success('订单已取消')
   loadData()
 }
 
 const confirm = async (row) => {
-  await http.post('/orders/update', { id: row.id, status: '已完成' })
+    await http.post('/order/update', { id: row.id, status: '已完成' })
   ElMessage.success('已确认收货')
   loadData()
 }
 
 const refund = async (row) => {
   await ElMessageBox.confirm('确定申请退款吗？', '提示')
-  await http.post('/orders/update', { id: row.id, status: '已退款' })
+    await http.post('/order/update', { id: row.id, status: '已退款' })
   ElMessage.success('退款成功')
   loadData()
 }
 
 const ship = async (row) => {
-  await http.post('/orders/update', { id: row.id, status: '已发货' })
+    await http.post('/order/update', { id: row.id, status: '已发货' })
   ElMessage.success('已发货')
   loadData()
 }
 
 const showAddress = (row) => {
-  ElMessageBox.alert(`${row.consignee} ${row.tel}\n${row.address}`, '收货地址')
+  ElMessageBox.alert(`${row.receiver_name} ${row.receiver_phone}\n${row.receiver_address}`, '收货地址')
 }
 
 onMounted(loadData)

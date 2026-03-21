@@ -4,7 +4,7 @@
       <el-form inline>
         <el-form-item label="书名">
           <el-input
-            v-model="search.shujimingcheng"
+            v-model="search.title"
             placeholder="搜索书名、作者"
             clearable
             @clear="loadData"
@@ -26,39 +26,14 @@
             style="width: 180px"
           />
         </el-form-item>
-        <el-form-item label="课程编号">
-          <el-input
-            v-model="search.kechengbianhao"
-            placeholder="搜索课程编号"
-            clearable
-            @clear="loadData"
-            @keyup.enter="loadData"
-            style="width: 180px"
-          />
-        </el-form-item>
         <el-form-item label="分类">
-          <el-select v-model="search.shujifenlei" placeholder="全部分类" clearable @change="loadData" style="width: 150px">
-            <el-option v-for="category in categories" :key="category" :label="category" :value="category" />
+          <el-select v-model="search.category_id" placeholder="全部分类" clearable @change="loadData" style="width: 150px">
+            <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="学院">
-          <el-select v-model="search.xueyuan" placeholder="全部学院" clearable @change="handleCollegeChange" style="width: 150px">
-            <el-option v-for="college in colleges" :key="college" :label="college" :value="college" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="专业">
-          <el-select v-model="search.zhuanye" placeholder="全部专业" clearable @change="handleMajorChange" style="width: 160px">
-            <el-option v-for="major in majors" :key="major" :label="major" :value="major" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="课程">
-          <el-select v-model="search.kecheng" placeholder="全部课程" clearable @change="handleCourseChange" style="width: 180px">
-            <el-option v-for="course in courses" :key="course" :label="course" :value="course" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="版本">
-          <el-select v-model="search.banben" placeholder="全部版本" clearable @change="loadData" style="width: 160px">
-            <el-option v-for="version in versions" :key="version" :label="version" :value="version" />
+        <el-form-item label="新旧程度">
+          <el-select v-model="search.condition_id" placeholder="全部成色" clearable @change="loadData" style="width: 150px">
+            <el-option v-for="c in conditions" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="排序">
@@ -102,30 +77,23 @@
           <el-col :xs="12" :sm="8" :md="6" v-for="book in list" :key="book.id">
             <el-card class="book-card" shadow="hover" @click="$router.push(`/front/book/${book.id}`)">
               <div class="book-img-wrapper">
-                <img :src="getImg(book.shujifengmian)" class="book-img" loading="lazy" />
-                <div class="book-overlay" v-if="!book.kucun || book.kucun <= 0">已售罄</div>
+                <img :src="getImg(book.cover)" class="book-img" loading="lazy" />
+                <div class="book-overlay" v-if="!book.stock || book.stock <= 0">已售罄</div>
               </div>
               <div class="book-info">
-                <div class="book-name" :title="book.shujimingcheng">{{ book.shujimingcheng }}</div>
-                <div class="book-author">{{ book.shujizuozhe }}</div>
-                <div class="book-path" :title="resolveHierarchyPath(book)">
-                  {{ resolveHierarchyPath(book) || '未标注专业分类' }}
-                </div>
-                <div class="book-extra">
-                  <span>ISBN {{ book.isbn || '-' }}</span>
-                  <span>{{ book.kechengbianhao || '-' }}</span>
-                </div>
+                <div class="book-name" :title="book.title">{{ book.title }}</div>
+                <div class="book-author">{{ book.author || '-' }}</div>
                 <div class="book-price">￥{{ book.price }}</div>
                 <div class="book-meta">
-                  <el-tag size="small" effect="plain">{{ book.shujifenlei }}</el-tag>
-                  <span class="condition">{{ book.xinjiuchengdu }}</span>
+                  <el-tag size="small" effect="plain">{{ book.category_name || '-' }}</el-tag>
+                  <span class="condition">{{ book.condition_name || '-' }}</span>
                 </div>
                 <div class="book-stock">
-                  <span v-if="book.kucun > 10" class="stock-good">
+                  <span v-if="book.stock > 10" class="stock-good">
                     <el-icon><CircleCheck /></el-icon> 库存充足
                   </span>
-                  <span v-else-if="book.kucun > 0" class="stock-low">
-                    <el-icon><Warning /></el-icon> 仅剩 {{ book.kucun }} 件
+                  <span v-else-if="book.stock > 0" class="stock-low">
+                    <el-icon><Warning /></el-icon> 仅剩 {{ book.stock }} 件
                   </span>
                   <span v-else class="stock-out">
                     <el-icon><CircleClose /></el-icon> 已售罄
@@ -152,11 +120,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { CircleCheck, CircleClose, Search, Warning } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/utils/http'
-import { getColleges, getCourses, getMajors, getVersions, resolveHierarchyPath } from '@/utils/bookHierarchy'
+
+const route = useRoute()
 
 const loading = ref(false)
 const list = ref([])
@@ -165,41 +135,15 @@ const page = ref(1)
 const pageSize = 12
 const sortType = ref('addtime')
 const categories = ref([])
-const colleges = getColleges()
+const conditions = ref([])
 const search = ref({
-  shujimingcheng: '',
+  title: '',
   isbn: '',
-  kechengbianhao: '',
-  shujifenlei: '',
-  xueyuan: '',
-  zhuanye: '',
-  kecheng: '',
-  banben: '',
+  category_id: '',
+  condition_id: '',
 })
 
-const majors = computed(() => getMajors(search.value.xueyuan))
-const courses = computed(() => getCourses(search.value.xueyuan, search.value.zhuanye))
-const versions = computed(() => getVersions(search.value.xueyuan, search.value.zhuanye, search.value.kecheng))
-
 const getImg = (value) => (value ? (value.startsWith('http') ? value : `/api/file/download/${value}`) : '')
-
-const handleCollegeChange = () => {
-  search.value.zhuanye = ''
-  search.value.kecheng = ''
-  search.value.banben = ''
-  loadData()
-}
-
-const handleMajorChange = () => {
-  search.value.kecheng = ''
-  search.value.banben = ''
-  loadData()
-}
-
-const handleCourseChange = () => {
-  search.value.banben = ''
-  loadData()
-}
 
 const loadData = async () => {
   loading.value = true
@@ -221,7 +165,7 @@ const loadData = async () => {
       params.order = 'desc'
     }
 
-    const res = await http.get('/ershoushuji/list', { params })
+    const res = await http.get('/book/list', { params })
     list.value = res.data?.data?.list || []
     total.value = res.data?.data?.total || 0
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -233,12 +177,25 @@ const loadData = async () => {
 }
 
 onMounted(async () => {
+  const q = route.query
+  if (q.category_id != null && q.category_id !== '') {
+    const id = Number(q.category_id)
+    search.value.category_id = Number.isFinite(id) ? id : ''
+  }
+  if (q.keyword != null && String(q.keyword).trim() !== '') {
+    search.value.title = String(q.keyword).trim()
+  }
   await loadData()
   try {
-    const res = await http.get('/option/shujifenlei/shujifenlei')
-    categories.value = res.data?.data || []
+    const [catRes, condRes] = await Promise.all([
+      http.get('/bookCategory/list', { params: { page: 1, limit: 100 } }),
+      http.get('/option/condition_level/name'),
+    ])
+    categories.value = catRes.data?.data?.list || []
+    conditions.value = (condRes.data?.data || []).map((name, i) => ({ id: i + 1, name }))
   } catch {
     categories.value = []
+    conditions.value = []
   }
 })
 </script>
