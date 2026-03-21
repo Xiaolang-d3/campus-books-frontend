@@ -201,8 +201,8 @@ const checkFav = async () => {
   if (!isLogin) return
   try {
     const uid = localStorage.getItem('userid')
-    const { data: res } = await http.get('/storeup/list', {
-      params: { page: 1, limit: 1, userid: uid, refid: route.params.id, tablename: 'ershoushuji' },
+    const { data: res } = await http.get('/favorite/list', {
+      params: { page: 1, limit: 1, user_id: uid, book_id: route.params.id },
     })
     isFav.value = (res.data?.total || res.data?.data?.total || 0) > 0
   } catch {
@@ -265,21 +265,18 @@ const toggleFav = async () => {
     const uid = Number(localStorage.getItem('userid'))
     if (isFav.value) {
       const { data: listRes } = await http.get('/favorite/list', {
-        params: { page: 1, limit: 1, userid: uid, book_id: route.params.id },
+        params: { page: 1, limit: 1, user_id: uid, book_id: route.params.id },
       })
       const item = listRes.data?.list?.[0] || listRes.data?.data?.list?.[0]
       if (item) {
-        await http.post('/storeup/delete', [item.id])
+        await http.post('/favorite/delete', [item.id])
       }
       isFav.value = false
       ElMessage.success('已取消收藏')
     } else {
       const { data: res } = await http.post('/favorite/add', {
-        userid: uid,
+        user_id: uid,
         book_id: book.value.id,
-        name: book.value.title,
-        picture: book.value.cover,
-        type: '1',
       })
       if (res.code === 0) {
         isFav.value = true
@@ -305,7 +302,7 @@ const submitComment = async () => {
   try {
     const { data: res } = await http.post('/review/add', {
       book_id: Number(route.params.id),
-      userid: Number(localStorage.getItem('userid')),
+      user_id: Number(localStorage.getItem('userid')),
       content: commentText.value.trim(),
     })
     if (res.code === 0) {
