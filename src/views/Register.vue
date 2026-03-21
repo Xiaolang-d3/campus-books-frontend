@@ -1,168 +1,98 @@
 <template>
-  <div class="register-container">
-    <div class="register-content">
-      <div class="register-left">
-        <div class="brand-section">
-          <div class="brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <h1 class="brand-title">加入校园书市</h1>
-          <p class="brand-slogan">开启你的知识交易之旅</p>
+  <div class="auth-page">
+    <aside class="auth-brand">
+      <div class="auth-brand__pattern" />
+      <div class="auth-brand__inner">
+        <div class="auth-brand__mark">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-        <div class="benefits">
-          <div class="benefit-item">
-            <div class="benefit-icon">✨</div>
-            <div class="benefit-content">
-              <h3>快速注册</h3>
-              <p>只需简单几步即可完成注册</p>
-            </div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">🎯</div>
-            <div class="benefit-content">
-              <h3>精准匹配</h3>
-              <p>根据专业课程智能推荐书籍</p>
-            </div>
-          </div>
-          <div class="benefit-item">
-            <div class="benefit-icon">🤝</div>
-            <div class="benefit-content">
-              <h3>校园社区</h3>
-              <p>与同学安全便捷地交易书籍</p>
-            </div>
-          </div>
-        </div>
+        <h1 class="auth-brand__title">校园二手专业书籍在线交易平台</h1>
+        <p class="auth-brand__slogan">开启你的知识交易之旅</p>
+        <ul class="auth-brand__bullets">
+          <li>一次注册 · 买书卖书</li>
+          <li>信息仅用于校内身份核验</li>
+        </ul>
       </div>
+    </aside>
 
-      <div class="register-right">
-        <div class="register-box">
-          <h2 class="register-title">创建账号</h2>
-          <p class="register-subtitle">填写以下信息完成注册</p>
-          
-          <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="学号" prop="username">
-                  <el-input 
-                    v-model="form.username" 
-                    placeholder="请输入学号"
-                    clearable
-                  >
-                    <template #prefix>
-                      <el-icon><User /></el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="姓名" prop="name">
-                  <el-input 
-                    v-model="form.name" 
-                    placeholder="请输入真实姓名"
-                    clearable
-                  >
-                    <template #prefix>
-                      <el-icon><Avatar /></el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-              </el-col>
-            </el-row>
+    <main class="auth-main">
+      <div class="auth-card auth-card--wide">
+        <header class="auth-card__head">
+          <h2 class="auth-card__title">创建账号</h2>
+          <p class="auth-card__desc">填写以下信息完成学生用户注册</p>
+        </header>
 
-            <el-form-item label="学院" prop="xueyuan">
-              <el-input 
-                v-model="form.xueyuan" 
-                placeholder="如：计算机学院"
-                clearable
-              >
-                <template #prefix>
-                  <el-icon><School /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
+        <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="auth-form">
+          <el-row :gutter="16">
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="学号" prop="username">
+                <el-input v-model="form.username" placeholder="请输入学号" size="large" clearable autocomplete="username" />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="姓名" prop="name">
+                <el-input v-model="form.name" placeholder="请输入真实姓名" size="large" clearable />
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="专业" prop="zhuanye">
-                  <el-input 
-                    v-model="form.zhuanye" 
-                    placeholder="如：软件工程"
-                    clearable
-                  >
-                    <template #prefix>
-                      <el-icon><Reading /></el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="年级" prop="nianji">
-                  <el-input 
-                    v-model="form.nianji" 
-                    placeholder="如：2022级"
-                    clearable
-                  >
-                    <template #prefix>
-                      <el-icon><Calendar /></el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-              </el-col>
-            </el-row>
+          <el-form-item label="学院" prop="xueyuan">
+            <el-input v-model="form.xueyuan" placeholder="如：计算机学院" size="large" clearable />
+          </el-form-item>
 
-            <el-form-item label="密码" prop="password">
-              <el-input 
-                v-model="form.password" 
-                type="password" 
-                placeholder="请设置登录密码（至少6位）"
-                show-password
-                clearable
-              >
-                <template #prefix>
-                  <el-icon><Lock /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
+          <el-row :gutter="16">
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="专业" prop="zhuanye">
+                <el-input v-model="form.zhuanye" placeholder="如：软件工程" size="large" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :xs="24" :sm="12">
+              <el-form-item label="年级" prop="nianji">
+                <el-input v-model="form.nianji" placeholder="如：2022级" size="large" clearable />
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-            <el-form-item label="确认密码" prop="password2">
-              <el-input 
-                v-model="form.password2" 
-                type="password" 
-                placeholder="请再次输入密码"
-                show-password
-                clearable
-              >
-                <template #prefix>
-                  <el-icon><Lock /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input
+              v-model="form.password"
+              type="password"
+              placeholder="至少 6 位"
+              size="large"
+              show-password
+              clearable
+              autocomplete="new-password"
+            />
+          </el-form-item>
 
-            <el-form-item>
-              <el-button 
-                type="primary" 
-                size="large" 
-                style="width: 100%" 
-                :loading="loading"
-                @click="handleRegister"
-              >
-                {{ loading ? '注册中...' : '立即注册' }}
-              </el-button>
-            </el-form-item>
+          <el-form-item label="确认密码" prop="password2">
+            <el-input
+              v-model="form.password2"
+              type="password"
+              placeholder="请再次输入密码"
+              size="large"
+              show-password
+              clearable
+              autocomplete="new-password"
+            />
+          </el-form-item>
 
-            <div class="register-footer">
-              <span class="footer-text">已有账号？</span>
-              <el-link type="primary" :underline="false" @click="$router.push('/login')">
-                立即登录
-              </el-link>
-            </div>
-          </el-form>
-        </div>
+          <el-form-item class="auth-form__submit">
+            <el-button type="primary" size="large" class="auth-submit" :loading="loading" @click="handleRegister">
+              {{ loading ? '提交中…' : '注册' }}
+            </el-button>
+          </el-form-item>
+
+          <p class="auth-card__footer">
+            已有账号？
+            <el-link type="primary" :underline="false" @click="$router.push('/login')">立即登录</el-link>
+          </p>
+        </el-form>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -170,7 +100,6 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock, Avatar, School, Reading, Calendar } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
 const router = useRouter()
@@ -205,29 +134,28 @@ const validatePassword2 = (rule, value, callback) => {
 const rules = {
   username: [
     { required: true, message: '请输入学号', trigger: 'blur' },
-    { min: 6, max: 20, message: '学号长度在6-20位之间', trigger: 'blur' }
+    { min: 6, max: 20, message: '学号长度在6-20位之间', trigger: 'blur' },
   ],
   name: [
     { required: true, message: '请输入姓名', trigger: 'blur' },
-    { min: 2, max: 10, message: '姓名长度在2-10位之间', trigger: 'blur' }
+    { min: 2, max: 10, message: '姓名长度在2-10位之间', trigger: 'blur' },
   ],
-  xueyuan: [{ required: true, message: '请输入学院', trigger: 'blur' }],
-  zhuanye: [{ required: true, message: '请输入专业', trigger: 'blur' }],
-  nianji: [{ required: true, message: '请输入年级', trigger: 'blur' }],
+  xueyuan: [{ required: false, message: '请输入学院', trigger: 'blur' }],
+  zhuanye: [{ required: false, message: '请输入专业', trigger: 'blur' }],
+  nianji: [{ required: false, message: '请输入年级', trigger: 'blur' }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { validator: validatePassword, trigger: 'blur' }
+    { validator: validatePassword, trigger: 'blur' },
   ],
   password2: [
     { required: true, message: '请确认密码', trigger: 'blur' },
-    { validator: validatePassword2, trigger: 'blur' }
+    { validator: validatePassword2, trigger: 'blur' },
   ],
 }
 
 const handleRegister = () => {
   formRef.value.validate(async (valid) => {
     if (!valid) return
-
     loading.value = true
     try {
       const { data: res } = await http.post('/yonghu/register', {
@@ -238,12 +166,9 @@ const handleRegister = () => {
         nianji: form.nianji.trim(),
         mima: form.password,
       })
-
       if (res.code === 0) {
         ElMessage.success('注册成功！即将跳转到登录页面')
-        setTimeout(() => {
-          router.push('/login')
-        }, 1500)
+        setTimeout(() => router.push('/login'), 1200)
       } else {
         ElMessage.error(res.msg || '注册失败')
       }
@@ -257,200 +182,246 @@ const handleRegister = () => {
 </script>
 
 <style scoped>
-.register-container {
+.auth-page {
+  --auth-accent: #2563eb;
+  --auth-accent-hover: #1d4ed8;
+  --auth-ink: #0f172a;
+  --auth-muted: #64748b;
+  --auth-line: #e2e8f0;
+  --auth-bg: #f8fafc;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  background: var(--auth-bg);
+  color: var(--auth-ink);
+}
+
+.auth-brand {
+  position: relative;
+  flex: 0 0 42%;
+  max-width: 520px;
+  min-height: 100vh;
+  background: linear-gradient(165deg, #0f172a 0%, #1e293b 48%, #0f172a 100%);
+  color: #f8fafc;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+}
+
+.auth-brand__pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.25) 0%, transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.12) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.auth-brand__pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(248, 250, 252, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 250, 252, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.auth-brand__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 320px;
+}
+
+.auth-brand__mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.auth-brand__mark svg {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+}
+
+.auth-brand__title {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.auth-brand__slogan {
+  margin: 0 0 32px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.auth-brand__bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 2;
+  color: rgba(248, 250, 252, 0.55);
+}
+
+.auth-brand__bullets li::before {
+  content: '·';
+  margin-right: 10px;
+  color: rgba(96, 165, 250, 0.8);
+}
+
+.auth-main {
+  flex: 1;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
+  padding: 40px 24px 48px;
 }
 
-.register-container::before {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  top: -300px;
-  left: -300px;
-  animation: float 10s ease-in-out infinite;
-}
-
-.register-container::after {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 50%;
-  bottom: -250px;
-  right: -250px;
-  animation: float 12s ease-in-out infinite reverse;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-30px) rotate(10deg); }
-}
-
-.register-content {
-  display: flex;
-  max-width: 1200px;
+.auth-card {
   width: 100%;
+  max-width: 400px;
   background: #fff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  position: relative;
-  z-index: 1;
+  border: 1px solid var(--auth-line);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 12px 40px rgba(15, 23, 42, 0.06);
+  padding: 40px 36px 36px;
 }
 
-.register-left {
-  flex: 1;
-  padding: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.auth-card--wide {
+  max-width: 520px;
 }
 
-.brand-section {
-  margin-bottom: 60px;
-}
-
-.brand-icon {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.auth-card__head {
   margin-bottom: 24px;
-  backdrop-filter: blur(10px);
 }
 
-.brand-icon svg {
-  width: 48px;
-  height: 48px;
-  color: #fff;
-}
-
-.brand-title {
-  font-size: 42px;
+.auth-card__title {
+  margin: 0 0 8px;
+  font-size: 22px;
   font-weight: 700;
-  margin: 0 0 12px 0;
-  letter-spacing: 2px;
+  color: var(--auth-ink);
+  letter-spacing: -0.02em;
 }
 
-.brand-slogan {
-  font-size: 18px;
-  opacity: 0.9;
+.auth-card__desc {
   margin: 0;
+  font-size: 14px;
+  color: var(--auth-muted);
 }
 
-.benefits {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+.auth-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
-.benefit-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
+.auth-form :deep(.el-form-item__label) {
+  color: var(--auth-ink);
+  font-weight: 500;
+  font-size: 13px;
+  padding-bottom: 6px;
 }
 
-.benefit-icon {
-  font-size: 40px;
-  flex-shrink: 0;
+.auth-form :deep(.el-input__wrapper) {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--auth-line) inset;
+  background: #fff;
+  transition: box-shadow 0.2s ease;
 }
 
-.benefit-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: 600;
+.auth-form :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #cbd5e1 inset;
 }
 
-.benefit-content p {
-  margin: 0;
-  font-size: 15px;
-  opacity: 0.9;
-  line-height: 1.6;
+.auth-form :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) inset, 0 0 0 1px var(--auth-accent) inset;
 }
 
-.register-right {
-  flex: 1;
-  padding: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow-y: auto;
-  max-height: 90vh;
+.auth-form__submit {
+  margin-bottom: 0;
+  margin-top: 8px;
 }
 
-.register-box {
+.auth-submit {
   width: 100%;
-  max-width: 500px;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  background: var(--auth-accent);
 }
 
-.register-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 8px 0;
+.auth-submit:hover {
+  background: var(--auth-accent-hover);
+}
+
+.auth-card__footer {
+  margin: 24px 0 0;
   text-align: center;
-}
-
-.register-subtitle {
   font-size: 14px;
-  color: #666;
-  margin: 0 0 32px 0;
-  text-align: center;
+  color: var(--auth-muted);
 }
 
-.register-footer {
-  text-align: center;
-  margin-top: 24px;
+.auth-card__footer :deep(.el-link) {
+  font-weight: 600;
+  color: var(--auth-accent);
 }
 
-.footer-text {
-  color: #666;
-  font-size: 14px;
-  margin-right: 8px;
+.auth-card__footer :deep(.el-link:hover) {
+  color: var(--auth-accent-hover);
 }
 
-/* 响应式设计 */
-@media (max-width: 968px) {
-  .register-left {
+@media (max-width: 900px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .auth-brand {
+    flex: none;
+    max-width: none;
+    min-height: auto;
+    width: 100%;
+    padding: 28px 24px 24px;
+    align-items: flex-start;
+  }
+
+  .auth-brand__inner {
+    max-width: none;
+  }
+
+  .auth-brand__title {
+    font-size: 24px;
+  }
+
+  .auth-brand__bullets {
     display: none;
   }
 
-  .register-content {
-    max-width: 600px;
+  .auth-main {
+    min-height: auto;
+    padding: 16px 20px 40px;
   }
 
-  .register-right {
-    padding: 40px 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  .register-container {
-    padding: 16px;
-  }
-
-  .register-right {
-    padding: 30px 20px;
-  }
-
-  .register-title {
-    font-size: 26px;
+  .auth-card {
+    padding: 28px 22px 24px;
   }
 }
 </style>

@@ -7,8 +7,40 @@
           <div class="balance-label">账户余额</div>
           <div class="balance-amount">¥{{ balance.toFixed(2) }}</div>
         </div>
+        <el-button type="primary" @click="showRechargeDialog = true">
+          <el-icon><Plus /></el-icon> 充值
+        </el-button>
       </div>
     </el-card>
+
+    <!-- 充值对话框 -->
+    <el-dialog v-model="showRechargeDialog" title="充值" width="400px" :close-on-click-modal="false">
+      <el-form :model="rechargeForm" :rules="rechargeRules" ref="rechargeFormRef" label-width="80px">
+        <el-form-item label="充值金额" prop="amount">
+          <el-input-number
+            v-model="rechargeForm.amount"
+            :min="1"
+            :max="10000"
+            :precision="2"
+            :step="10"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <div class="recharge-tip">
+          <el-icon><InfoFilled /></el-icon>
+          <span>单次充值金额不能超过 10000 元</span>
+        </div>
+        <div class="quick-amounts">
+          <el-button v-for="amt in [50, 100, 200, 500]" :key="amt" @click="rechargeForm.amount = amt">
+            {{ amt }}元
+          </el-button>
+        </div>
+      </el-form>
+      <template #footer>
+        <el-button @click="showRechargeDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleRecharge" :loading="recharging">确认充值</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 流水记录 -->
     <el-card class="logs-card" shadow="never">
@@ -68,8 +100,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Refresh, Plus, Minus, RefreshLeft, Money } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { Refresh, Plus, Minus, RefreshLeft, Money, InfoFilled } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
 
 const balance = ref(0)
@@ -78,6 +110,18 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = 20
 const loading = ref(false)
+
+// 充值相关
+const showRechargeDialog = ref(false)
+const recharging = ref(false)
+const rechargeForm = ref({ amount: 100 })
+const rechargeFormRef = ref(null)
+const rechargeRules = {
+  amount: [
+    { required: true, message: '请输入充值金额', trigger: 'blur' },
+    { type: 'number', min: 1, max: 10000, message: '充值金额必须在 1-10000 元之间', trigger: 'blur' }
+  ]
+}
 
 const loadBalance = async () => {
   try {
@@ -100,6 +144,41 @@ const loadLogs = async () => {
     ElMessage.error('加载记录失败')
   } finally {
     loading.value = false
+  }
+}
+
+const handleRecharge = async () => {
+  const amount = rechargeForm.value.amount
+  if (!amount || amount <= 0) {
+    ElMessage.warning('请输入正确的充值金额')
+    return
+  }
+  if (amount > 10000) {
+    ElMessage.warning('单次充值金额不能超过 10000 元')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确认充值 ¥${amount.toFixed(2)} 到您的账户？`,
+      '确认充值',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning' }
+    )
+
+    recharging.value = true
+    await http.post('/wallet/recharge', { amount })
+
+    ElMessage.success('充值成功')
+    showRechargeDialog.value = false
+    rechargeForm.value.amount = 100
+    await loadBalance()
+    await loadLogs()
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.response?.data?.msg || '充值失败')
+    }
+  } finally {
+    recharging.value = false
   }
 }
 
@@ -152,6 +231,41 @@ onMounted(() => {
   font-size: 42px;
   font-weight: 700;
   letter-spacing: 1px;
+}
+
+.balance-header :deep(.el-button) {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+}
+
+.balance-header :deep(.el-button:hover) {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.recharge-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 4px;
+  color: #52c41a;
+  font-size: 13px;
+}
+
+.quick-amounts {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.quick-amounts .el-button {
+  flex: 1;
 }
 
 .logs-card {

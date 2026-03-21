@@ -3,9 +3,6 @@
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
-        <div class="hero-badge">校园二手书交易平台</div>
-        <h1 class="hero-title">校园书市</h1>
-        <p class="hero-subtitle">让知识在校园流动，让书籍找到新主人</p>
         <div class="hero-search">
           <input 
             v-model="searchQuery" 
@@ -54,7 +51,11 @@
           class="category-card"
           @click="searchByCategory(category)"
         >
-          <div class="category-icon">{{ getCategoryIcon(category) }}</div>
+          <div class="category-icon">
+            <el-icon class="category-icon-el" :size="32">
+              <component :is="getCategoryIcon(category)" />
+            </el-icon>
+          </div>
           <div class="category-name">{{ category }}</div>
         </div>
       </div>
@@ -109,22 +110,39 @@
       <el-empty v-else description="暂无书籍" />
     </section>
 
-    <!-- Features Section -->
+    <!-- Features Section：Element Plus 风格 -->
     <section class="features-section">
-      <div class="features-grid">
-        <div class="feature-card" v-for="feature in features" :key="feature.title">
-          <div class="feature-icon">{{ feature.icon }}</div>
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          <p class="feature-desc">{{ feature.desc }}</p>
-        </div>
-      </div>
+      <el-row :gutter="20" class="features-row">
+        <el-col
+          v-for="feature in features"
+          :key="feature.title"
+          :xs="24"
+          :sm="12"
+          :md="6"
+        >
+          <el-card shadow="never" class="feature-card">
+            <div class="feature-icon-wrap">
+              <el-icon class="feature-icon-el" :size="28">
+                <component :is="feature.icon" />
+              </el-icon>
+            </div>
+            <div class="feature-title">{{ feature.title }}</div>
+            <p class="feature-desc">{{ feature.desc }}</p>
+          </el-card>
+        </el-col>
+      </el-row>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
+import {
+  Aim, Money, Lock, Lightning,
+  Monitor, Reading, Briefcase, Histogram, Compass, Filter,
+  Timer, Notebook, School, Brush, Collection
+} from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
 const router = useRouter()
@@ -143,27 +161,32 @@ const stats = computed(() => [
 ])
 
 const features = [
-  { icon: '🎯', title: '精准匹配', desc: '根据专业课程智能推荐' },
-  { icon: '💰', title: '价格实惠', desc: '比新书便宜50%以上' },
-  { icon: '🔒', title: '交易安全', desc: '平台担保，放心购买' },
-  { icon: '⚡', title: '快速交易', desc: '校内交易，当面验货' }
+  { icon: markRaw(Aim), title: '精准匹配', desc: '根据专业课程智能推荐' },
+  { icon: markRaw(Money), title: '价格实惠', desc: '比新书便宜50%以上' },
+  { icon: markRaw(Lock), title: '交易安全', desc: '平台担保，放心购买' },
+  { icon: markRaw(Lightning), title: '快速交易', desc: '校内交易，当面验货' }
 ]
 
 const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
 
-const getCategoryIcon = (category) => {
-  const icons = {
-    '计算机': '💻',
-    '文学': '📚',
-    '经济': '💼',
-    '数学': '🔢',
-    '物理': '⚛️',
-    '化学': '🧪',
-    '历史': '📜',
-    '艺术': '🎨'
-  }
-  return icons[category] || '📖'
+/** 分类名 → Element Plus 线性图标（与数据库分类名对应） */
+const categoryIconMap = {
+  计算机: markRaw(Monitor),
+  文学: markRaw(Reading),
+  经济: markRaw(Briefcase),
+  数学: markRaw(Histogram),
+  物理: markRaw(Compass),
+  化学: markRaw(Filter),
+  历史: markRaw(Timer),
+  艺术: markRaw(Brush),
+  哲学: markRaw(Notebook),
+  教育: markRaw(School)
 }
+
+const defaultCategoryIcon = markRaw(Collection)
+
+const getCategoryIcon = (category) =>
+  categoryIconMap[category] || defaultCategoryIcon
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
@@ -206,40 +229,8 @@ onMounted(async () => {
 
 /* Hero Section */
 .hero {
-  padding: 80px 0 60px;
+  padding: 60px 0 48px;
   text-align: center;
-}
-
-.hero-badge {
-  display: inline-block;
-  padding: 6px 16px;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
-  border-radius: 20px;
-  font-size: 12px;
-  color: #737373;
-  letter-spacing: 0.05em;
-  margin-bottom: 24px;
-  text-transform: uppercase;
-}
-
-.hero-title {
-  font-size: 72px;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  margin: 0 0 16px;
-  color: #0a0a0a;
-  line-height: 1.1;
-}
-
-.hero-subtitle {
-  font-size: 18px;
-  color: #737373;
-  margin: 0 0 48px;
-  font-weight: 400;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .hero-search {
@@ -377,8 +368,14 @@ onMounted(async () => {
 }
 
 .category-icon {
-  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 12px;
+}
+
+.category-icon-el {
+  color: var(--el-color-primary, #409eff);
 }
 
 .category-name {
@@ -523,38 +520,56 @@ onMounted(async () => {
   color: #a3a3a3;
 }
 
-/* Features Section */
+/* Features Section — Element Plus 风格 */
 .features-section {
-  padding: 80px 0 0;
-  border-top: 1px solid #e5e5e5;
+  padding: 64px 0 0;
+  border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 32px;
+.features-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .feature-card {
-  text-align: center;
-  padding: 32px 24px;
+  height: 100%;
+  border: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-radius: var(--el-border-radius-base, 4px);
+  background: var(--el-fill-color-blank, #fff);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.feature-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.feature-card:hover {
+  border-color: var(--el-border-color, #dcdfe6);
+  box-shadow: var(--el-box-shadow-light, 0 0 12px rgba(0, 0, 0, 0.06));
+}
+
+.feature-card :deep(.el-card__body) {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.feature-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.feature-icon-el {
+  color: var(--el-color-primary, #409eff);
 }
 
 .feature-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #0a0a0a;
+  color: var(--el-text-color-primary, #303133);
   margin: 0 0 8px;
+  line-height: 1.4;
 }
 
 .feature-desc {
-  font-size: 14px;
-  color: #737373;
+  font-size: 13px;
+  color: var(--el-text-color-secondary, #909399);
   margin: 0;
   line-height: 1.6;
 }
@@ -602,15 +617,7 @@ onMounted(async () => {
   }
 
   .hero {
-    padding: 60px 0 40px;
-  }
-
-  .hero-title {
-    font-size: 48px;
-  }
-
-  .hero-subtitle {
-    font-size: 16px;
+    padding: 40px 0 32px;
   }
 
   .hero-search {
@@ -649,9 +656,16 @@ onMounted(async () => {
     font-size: 24px;
   }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
+  .features-section {
+    padding-top: 48px;
+  }
+
+  .features-row :deep(.el-col) {
+    margin-bottom: 16px;
+  }
+
+  .features-row :deep(.el-col:last-child) {
+    margin-bottom: 0;
   }
 }
 </style>
