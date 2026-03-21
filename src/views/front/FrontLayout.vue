@@ -54,6 +54,7 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="center">个人中心</el-dropdown-item>
+                  <el-dropdown-item command="ai-chat">AI 助手</el-dropdown-item>
                   <el-dropdown-item command="wallet">我的钱包</el-dropdown-item>
                   <el-dropdown-item command="orders">我的订单</el-dropdown-item>
                   <el-dropdown-item command="my-books">我的发布</el-dropdown-item>
@@ -168,7 +169,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   ShoppingCart, ArrowDown,
   HomeFilled, Reading, Document, Star, Location,
-  User, Close, MoreFilled, SwitchButton
+  User, Close, MoreFilled, SwitchButton, MagicStick
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
@@ -188,6 +189,7 @@ const handleScroll = () => {
 const navItems = [
   { label: '首页', path: '/front/home' },
   { label: '书籍市场', path: '/front/books' },
+  { label: 'AI助手', path: '/front/ai-chat' },
 ]
 
 const loadCartCount = async () => {

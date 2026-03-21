@@ -4,9 +4,9 @@
     <section class="hero">
       <div class="hero-content">
         <div class="hero-search">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
+          <input
+            v-model="searchQuery"
+            type="text"
             placeholder="搜索书籍、作者、ISBN..."
             @keyup.enter="handleSearch"
             class="search-input"
@@ -19,9 +19,9 @@
           </button>
         </div>
         <div class="hero-tags">
-          <button 
-            v-for="tag in quickTags" 
-            :key="tag" 
+          <button
+            v-for="tag in quickTags"
+            :key="tag"
             class="tag-btn"
             @click="quickSearch(tag)"
           >
@@ -30,6 +30,9 @@
         </div>
       </div>
     </section>
+
+    <!-- AI 推荐横幅 -->
+    <RecommendBanner :recommendations="recommendations" />
 
     <!-- Stats Section -->
     <section class="stats">
@@ -92,13 +95,13 @@
           @click="$router.push(`/front/book/${book.id}`)"
         >
           <div class="book-image">
-            <img :src="getImg(book.shujifengmian)" :alt="book.shujimingcheng" loading="lazy" />
-            <div v-if="!book.kucun" class="sold-badge">售罄</div>
-            <div v-else-if="book.kucun <= 3" class="limited-badge">仅剩{{ book.kucun }}件</div>
+            <img :src="getImg(book.cover)" :alt="book.title" loading="lazy" />
+            <div v-if="!book.stock" class="sold-badge">售罄</div>
+            <div v-else-if="book.stock <= 3" class="limited-badge">仅剩{{ book.stock }}件</div>
           </div>
           <div class="book-info">
-            <h3 class="book-title">{{ book.shujimingcheng }}</h3>
-            <p class="book-author">{{ book.shujizuozhe }}</p>
+            <h3 class="book-title">{{ book.title }}</h3>
+            <p class="book-author">{{ book.author }}</p>
             <div class="book-footer">
               <span class="book-price">¥{{ book.price }}</span>
               <span class="book-condition">{{ book.xinjiuchengdu }}</span>
@@ -144,6 +147,7 @@ import {
   Timer, Notebook, School, Brush, Collection
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+import RecommendBanner from '@/components/front/RecommendBanner.vue'
 
 const router = useRouter()
 const loading = ref(true)
@@ -151,6 +155,7 @@ const books = ref([])
 const total = ref(0)
 const categories = ref([])
 const searchQuery = ref('')
+const recommendations = ref([])
 
 const quickTags = ['计算机', '文学', '经济', '数学', '物理']
 
@@ -167,7 +172,15 @@ const features = [
   { icon: markRaw(Lightning), title: '快速交易', desc: '校内交易，当面验货' }
 ]
 
-const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
+const getImg = (value) => {
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value) || value.startsWith('data:image')) return value
+  const normalized = value.replace(/\\/g, '/').replace(/^\/+/, '')
+  if (normalized.startsWith('upload/')) {
+    return `/api/file/download/${normalized}`
+  }
+  return `/api/file/download/upload/${normalized}`
+}
 
 /** 分类名 → Element Plus 线性图标（与数据库分类名对应） */
 const categoryIconMap = {
@@ -207,15 +220,17 @@ const searchByCategory = (category) => {
 onMounted(async () => {
   loading.value = true
   try {
-    const [booksRes, categoriesRes] = await Promise.all([
+    const [booksRes, categoriesRes, recommendRes] = await Promise.all([
       http.get('/book/list', { params: { page: 1, limit: 8, sort: 'addtime', order: 'desc' } }),
-      http.get('/bookCategory/option')
+      http.get('/bookCategory/option'),
+      http.get('/recommend/home')
     ])
     books.value = booksRes.data?.data?.list || []
     total.value = booksRes.data?.data?.total || 0
     categories.value = categoriesRes.data?.data || []
+    recommendations.value = recommendRes.data?.data?.recommendations || []
   } catch (e) {
-    console.error(e)
+    console.error('首页数据加载失败', e)
   } finally {
     loading.value = false
   }

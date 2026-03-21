@@ -124,7 +124,35 @@ const banners = ref([])
 const hotBooks = ref([])
 const latestNews = ref([])
 const baseUrl = import.meta.env.VITE_API_URL || ''
-const getImg = (v) => v ? (v.startsWith('http') ? v : `${baseUrl}/api/file/download/${v}`) : ''
+
+const normalizeImagePath = (value) => {
+  if (!value) return ''
+
+  const firstValue = String(value)
+    .split(',')
+    .map(item => item.trim())
+    .find(Boolean)
+
+  if (!firstValue) return ''
+
+  if (/^https?:\/\//i.test(firstValue) || firstValue.startsWith('data:image')) {
+    return firstValue
+  }
+
+  const normalized = firstValue
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .replace(/^static\//, '')
+    .replace(/^api\/file\/download\//, '')
+
+  if (normalized.startsWith('upload/')) {
+    return `${baseUrl}/api/file/download/${normalized}`
+  }
+
+  return `${baseUrl}/api/file/download/upload/${normalized}`
+}
+
+const getImg = (value) => normalizeImagePath(value)
 
 const marqueeSpeed = computed(() => {
   const textLength = latestNews.value.reduce((sum, news) => sum + news.title.length, 0)

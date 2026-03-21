@@ -5,9 +5,9 @@
       <el-row :gutter="16">
         <el-col :span="6" v-for="item in list" :key="item.id">
           <el-card shadow="hover" class="fav-card">
-            <img :src="getImg(item.picture)" class="fav-img" @click="$router.push(`/front/book/${item.book_id}`)" />
+            <img :src="getImg(item.book_cover)" class="fav-img" @click="$router.push(`/front/book/${item.book_id}`)" />
             <div class="fav-info">
-              <div class="fav-name" @click="$router.push(`/front/book/${item.book_id}`)">{{ item.name }}</div>
+              <div class="fav-name" @click="$router.push(`/front/book/${item.book_id}`)">{{ item.book_title || item.name }}</div>
               <el-button text type="danger" size="small" @click="removeFav(item)">取消收藏</el-button>
             </div>
           </el-card>

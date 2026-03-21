@@ -76,7 +76,7 @@
           </el-sub-menu>
         </template>
 
-        <el-menu-item index="/review">书籍评论</el-menu-item>
+        <el-menu-item index="/review">
           <el-icon><ChatDotRound /></el-icon>
           <span>书籍评论</span>
         </el-menu-item>

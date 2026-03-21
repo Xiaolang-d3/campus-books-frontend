@@ -130,7 +130,7 @@ const handleLogin = () => {
       }
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('role', form.role)
-      localStorage.setItem('tableName', form.role === 'admin' ? 'users' : 'yonghu')
+      localStorage.setItem('tableName', form.role === 'admin' ? 'admin' : 'yonghu')
       localStorage.setItem('userid', res.data.userid)
       localStorage.setItem('username', res.data.username)
       ElMessage.success('登录成功，欢迎回来！')

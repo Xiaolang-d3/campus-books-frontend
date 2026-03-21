@@ -159,12 +159,10 @@ const handleRegister = () => {
     loading.value = true
     try {
       const { data: res } = await http.post('/yonghu/register', {
-        yonghuzhanghao: form.username.trim(),
-        yonghuxingming: form.name.trim(),
-        xueyuan: form.xueyuan.trim(),
-        zhuanye: form.zhuanye.trim(),
-        nianji: form.nianji.trim(),
-        mima: form.password,
+        student_no: form.username.trim(),
+        name: form.name.trim(),
+        grade: form.nianji.trim(),
+        password: form.password,
       })
       if (res.code === 0) {
         ElMessage.success('注册成功！即将跳转到登录页面')

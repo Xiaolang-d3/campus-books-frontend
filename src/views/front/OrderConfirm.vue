@@ -18,14 +18,22 @@
         <el-table-column label="商品" min-width="200">
           <template #default="{ row }">
             <div style="display:flex;align-items:center;gap:12px">
-              <img :src="getImg(row.picture)" style="width:50px;height:50px;object-fit:cover;border-radius:4px" />
-              <span>{{ row.goodname }}</span>
+              <img :src="getImg(row.book_cover || row.picture)" style="width:50px;height:50px;object-fit:cover;border-radius:4px" />
+              <span>{{ row.book_title || row.goodname }}</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="单价" width="100"><template #default="{ row }">¥{{ row.price }}</template></el-table-column>
-        <el-table-column label="数量" width="80" prop="buynumber" />
-        <el-table-column label="小计" width="120"><template #default="{ row }">¥{{ (row.price * row.buynumber).toFixed(2) }}</template></el-table-column>
+        <el-table-column label="单价" width="100">
+          <template #default="{ row }">¥{{ Number(row.book_price ?? row.price ?? 0).toFixed(2) }}</template>
+        </el-table-column>
+        <el-table-column label="数量" width="80">
+          <template #default="{ row }">{{ row.quantity ?? row.buynumber ?? 0 }}</template>
+        </el-table-column>
+        <el-table-column label="小计" width="120">
+          <template #default="{ row }">
+            ¥{{ (Number(row.book_price ?? row.price ?? 0) * Number(row.quantity ?? row.buynumber ?? 0)).toFixed(2) }}
+          </template>
+        </el-table-column>
       </el-table>
       <el-divider />
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:20px">
@@ -66,7 +74,11 @@ const submitting = ref(false)
 const showAddrForm = ref(false)
 const addrForm = ref({ contact_name: '', phone: '', detail: '', is_default: 0 })
 const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
-const totalPrice = computed(() => items.value.reduce((s, r) => s + r.price * r.buynumber, 0).toFixed(2))
+const totalPrice = computed(() =>
+  items.value
+    .reduce((s, r) => s + Number(r.book_price ?? r.price ?? 0) * Number(r.quantity ?? r.buynumber ?? 0), 0)
+    .toFixed(2)
+)
 
 const loadAddr = async () => {
   const res = await http.get('/address/list', { params: { page: 1, limit: 100 } })
@@ -88,22 +100,40 @@ const submitOrder = async () => {
   if (!selectedAddr.value) return ElMessage.warning('请选择收货地址')
   if (!items.value.length) return ElMessage.warning('没有商品')
   submitting.value = true
+
+  try {
+    let lastOrderId = null
     const addr = addrList.value.find(a => a.id === selectedAddr.value)
+
     // 提交订单时带上地址快照
     for (const item of items.value) {
+      const quantity = Number(item.quantity ?? item.buynumber ?? 0)
+      const price = Number(item.book_price ?? item.price ?? 0)
+      const bookId = item.book_id ?? item.goodid
+
       const res = await http.post('/order/save', {
-        book_id: item.book_id, quantity: item.quantity,
-        price: item.book_price, total_amount: item.book_price * item.quantity,
-        type: 1, status: '未支付', remark: remark.value,
-        receiver_name: addr?.contact_name || '', receiver_phone: addr?.phone || '',
-        receiver_address: addr ? `${addr.province || ''}${addr.city || ''}${addr.district || ''}${addr.detail || ''}` : ''
+        book_id: bookId,
+        quantity,
+        price,
+        total_amount: price * quantity,
+        type: 1,
+        status: '未支付',
+        remark: remark.value,
+        receiver_name: addr?.contact_name || '',
+        receiver_phone: addr?.phone || '',
+        receiver_address: addr
+          ? `${addr.province || ''}${addr.city || ''}${addr.district || ''}${addr.detail || ''}`
+          : ''
       })
       lastOrderId = res.data?.data?.id
+
       // 删除购物车项
       if (item.id) await http.post('/cart/delete', [item.id])
     }
+
     ElMessage.success('下单成功，请前往支付')
     sessionStorage.removeItem('checkout_items')
+
     // 跳转到支付页面
     if (lastOrderId) {
       router.push(`/front/payment/${lastOrderId}`)

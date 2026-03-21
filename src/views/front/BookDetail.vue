@@ -7,7 +7,7 @@
             <el-col :xs="24" :md="10">
               <div class="book-image-wrapper">
                 <img :src="getImg(book.cover)" class="book-image" />
-                <div v-if="!book.kucun || book.kucun <= 0" class="image-overlay">已售罄</div>
+                <div v-if="!book.stock || book.stock <= 0" class="image-overlay">已售罄</div>
               </div>
             </el-col>
 
@@ -78,7 +78,7 @@
 
     <el-card v-if="book && !loading" class="section-card">
       <template #header>书籍简介</template>
-      <div class="book-intro">{{ book.shujijianjie || '暂无简介' }}</div>
+      <div class="book-intro">{{ book.description || '暂无简介' }}</div>
     </el-card>
 
     <el-card v-if="!loading" class="section-card">
@@ -141,19 +141,27 @@ const comments = ref([])
 const commentText = ref('')
 const isLogin = !!localStorage.getItem('token')
 
-const getImg = (value) => (value ? (value.startsWith('http') ? value : `/api/file/download/${value}`) : '')
+const getImg = (value) => {
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value) || value.startsWith('data:image')) return value
+  const normalized = value.replace(/\\/g, '/').replace(/^\/+/, '')
+  if (normalized.startsWith('upload/')) {
+    return `/api/file/download/${normalized}`
+  }
+  return `/api/file/download/upload/${normalized}`
+}
 
 const stockType = computed(() => {
-  if (!book.value || !book.value.kucun) return 'danger'
-  if (book.value.kucun > 10) return 'success'
-  if (book.value.kucun > 0) return 'warning'
+  if (!book.value || !book.value.stock) return 'danger'
+  if (book.value.stock > 10) return 'success'
+  if (book.value.stock > 0) return 'warning'
   return 'danger'
 })
 
 const stockText = computed(() => {
-  if (!book.value || !book.value.kucun) return '已售罄'
-  if (book.value.kucun > 10) return '库存充足'
-  if (book.value.kucun > 0) return `仅剩 ${book.value.kucun} 件`
+  if (!book.value || !book.value.stock) return '已售罄'
+  if (book.value.stock > 10) return '库存充足'
+  if (book.value.stock > 0) return `仅剩 ${book.value.stock} 件`
   return '已售罄'
 })
 
@@ -211,12 +219,12 @@ const ensureLogin = () => {
 
 const addToCart = async () => {
   if (!ensureLogin()) return
-  if (!book.value?.kucun || book.value.kucun <= 0) {
+  if (!book.value?.stock || book.value.stock <= 0) {
     ElMessage.warning('当前书籍已售罄')
     return
   }
-  if (buyNum.value > book.value.kucun) {
-    ElMessage.warning(`库存不足，仅剩 ${book.value.kucun} 件`)
+  if (buyNum.value > book.value.stock) {
+    ElMessage.warning(`库存不足，仅剩 ${book.value.stock} 件`)
     return
   }
 
