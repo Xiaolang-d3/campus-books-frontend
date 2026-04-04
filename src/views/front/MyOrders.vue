@@ -20,7 +20,7 @@
       </el-tabs>
 
       <el-table :data="list" border>
-        <el-table-column label="订单号" prop="orderid" width="220" />
+        <el-table-column label="订单号" prop="order_no" min-width="200" show-overflow-tooltip />
         <el-table-column label="商品" min-width="220">
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 8px">
@@ -29,12 +29,16 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="scopeTab === 'buy'" label="卖家" min-width="140">
+        <el-table-column v-if="scopeTab === 'buy'" label="卖家" min-width="160">
           <template #default="{ row }">
-            <span>{{ row.sellerxingming || row.sellerzhanghao || '-' }}</span>
+            <span v-if="row.seller_name || row.seller_student_no">
+              {{ row.seller_name || '' }}
+              <span v-if="row.seller_student_no" class="seller-no">（{{ row.seller_student_no }}）</span>
+            </span>
+            <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column v-else label="收货人" min-width="140" prop="consignee" />
+        <el-table-column v-else label="收货人" min-width="140" prop="receiver_name" show-overflow-tooltip />
         <el-table-column label="数量" prop="quantity" width="70" />
         <el-table-column label="总价" width="100">
           <template #default="{ row }">￥{{ row.total_amount }}</template>
@@ -141,3 +145,10 @@ const showAddress = (row) => {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.seller-no {
+  color: var(--el-text-color-secondary, #909399);
+  font-weight: 400;
+}
+</style>

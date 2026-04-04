@@ -1,14 +1,13 @@
 <template>
   <section class="recommend-banner" v-if="recommendations.length">
-    <div class="banner-header">
-      <div class="banner-title-wrap">
-        <span class="ai-badge">
-          <el-icon :size="14"><MagicStick /></el-icon>
-          AI 推荐
-        </span>
+    <header class="banner-header">
+      <div class="header-inner">
+        <div class="header-dot" />
         <h2 class="banner-title">为你精选好书</h2>
+        <span class="header-divider" />
+        <p class="banner-subtitle">智能推荐 · 基于你的浏览与偏好</p>
       </div>
-    </div>
+    </header>
 
     <el-carousel
       :interval="5000"
@@ -25,7 +24,6 @@
         :class="['recommend-card', { 'is-active': index === activeIndex }]"
       >
         <div class="card-inner" @click="goBookDetail(book.id)">
-          <!-- 左侧：书籍封面 -->
           <div class="card-cover">
             <img
               :src="getImg(book.cover)"
@@ -38,7 +36,6 @@
             </div>
           </div>
 
-          <!-- 右侧：书籍信息 + 推荐理由 -->
           <div class="card-content">
             <div class="card-meta">
               <span class="card-category" v-if="book.category_name">
@@ -89,7 +86,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { MagicStick, ChatDotRound, ArrowRight } from '@element-plus/icons-vue'
+import { ChatDotRound, ArrowRight } from '@element-plus/icons-vue'
 
 const props = defineProps({
   recommendations: {
@@ -119,46 +116,62 @@ const handleChange = (index) => {
 }
 
 .banner-header {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   text-align: center;
 }
 
-.banner-title-wrap {
+.header-inner {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 20px;
-  letter-spacing: 0.05em;
+.header-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6366f1;
+  margin-bottom: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
 }
 
 .banner-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #0a0a0a;
-  letter-spacing: -0.02em;
   margin: 0;
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
 }
 
-/* 轮播卡片 */
+.header-divider {
+  width: 28px;
+  height: 2px;
+  background: linear-gradient(90deg, #818cf8, #c084fc);
+  border-radius: 2px;
+  margin: 4px 0;
+}
+
+.banner-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  font-weight: 400;
+}
+
+.recommend-carousel {
+  padding: 6px 0 18px;
+}
+
 .recommend-card {
-  border-radius: 12px;
-  transition: transform 0.3s ease;
+  border-radius: 14px;
   overflow: hidden;
 }
 
 .recommend-card :deep(.el-carousel__item) {
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .card-inner {
@@ -168,17 +181,21 @@ const handleChange = (index) => {
   height: 100%;
   min-height: 300px;
   box-sizing: border-box;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
   overflow: hidden;
 }
 
 .card-inner:hover {
-  border-color: #d0d0d0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.22);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
 }
 
 .card-inner:hover .cover-overlay {
@@ -186,49 +203,48 @@ const handleChange = (index) => {
 }
 
 .card-inner:hover .cover-img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
-/* 封面 */
 .card-cover {
   position: relative;
   width: 148px;
   min-width: 148px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }
 
 .cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.35s ease;
 }
 
 .cover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, rgba(15, 23, 42, 0.42) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .view-detail {
   color: #fff;
   font-size: 13px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(6px);
 }
 
-/* 内容 */
 .card-content {
   flex: 1;
   display: flex;
@@ -246,19 +262,19 @@ const handleChange = (index) => {
 
 .card-category,
 .card-condition {
-  padding: 2px 10px;
-  background: #f0f0f0;
-  color: #666;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  color: #475569;
   font-size: 11px;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #0a0a0a;
   margin: 0;
-  line-height: 1.4;
+  color: #0f172a;
+  font-size: 18px;
+  line-height: 1.42;
+  font-weight: 650;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -276,42 +292,41 @@ const handleChange = (index) => {
 }
 
 .meta-label {
-  color: #a0a0a0;
+  color: #94a3b8;
   flex-shrink: 0;
 }
 
 .meta-value {
-  color: #666;
+  color: #475569;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 推荐理由 */
 .card-reason {
   flex: 1;
   margin-top: 4px;
-  padding: 12px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-  border-radius: 8px;
-  border-left: 3px solid #667eea;
+  padding: 12px 12px 11px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.92) 0%, rgba(241, 245, 249, 0.92) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
 }
 
 .reason-label {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #667eea;
-  font-size: 11px;
-  font-weight: 500;
   margin-bottom: 6px;
+  color: #6366f1;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .reason-text {
-  font-size: 13px;
-  color: #555;
-  line-height: 1.6;
   margin: 0;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -319,14 +334,13 @@ const handleChange = (index) => {
   -webkit-box-orient: vertical;
 }
 
-/* 底部价格 */
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
   padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .card-price {
@@ -337,33 +351,28 @@ const handleChange = (index) => {
 .price-symbol {
   font-size: 14px;
   font-weight: 600;
-  color: #e63a3a;
+  color: #ef4444;
 }
 
 .price-value {
   font-size: 24px;
-  font-weight: 700;
-  color: #e63a3a;
-  letter-spacing: -0.02em;
+  font-weight: 750;
+  color: #ef4444;
+  letter-spacing: -0.03em;
 }
 
 .card-action {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #667eea;
-  font-weight: 500;
-  transition: gap 0.2s;
+  color: #4f46e5;
+  font-weight: 600;
+  transition: gap 0.2s ease;
 }
 
 .card-inner:hover .card-action {
   gap: 6px;
-}
-
-/* 轮播样式 */
-.recommend-carousel {
-  padding: 6px 0 18px;
 }
 
 :deep(.el-carousel__container) {
@@ -372,7 +381,7 @@ const handleChange = (index) => {
 
 :deep(.el-carousel__item--card) {
   width: 56%;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: visible;
 }
 
@@ -381,7 +390,7 @@ const handleChange = (index) => {
 }
 
 :deep(.el-carousel__item) {
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 :deep(.el-carousel__mask) {
@@ -391,17 +400,16 @@ const handleChange = (index) => {
 :deep(.el-carousel__button) {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: #d0d0d0;
+  border-radius: 999px;
+  background: #d7def0;
 }
 
 :deep(.el-carousel__indicator.is-active .el-carousel__button) {
-  background: #667eea;
+  background: #6366f1;
   width: 24px;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
-/* 响应式 */
 @media (max-width: 992px) {
   :deep(.el-carousel__item--card) {
     width: 64%;
@@ -431,21 +439,20 @@ const handleChange = (index) => {
     padding: 32px 0 16px;
   }
 
-  .banner-title-wrap {
-    flex-direction: column;
-    gap: 10px;
+  .banner-header {
+    margin-bottom: 22px;
   }
 
   .banner-title {
     font-size: 22px;
   }
 
-  .recommend-carousel {
-    padding-bottom: 12px;
+  .banner-subtitle {
+    font-size: 12px;
   }
 
-  .el-carousel {
-    height: auto !important;
+  .recommend-carousel {
+    padding-bottom: 12px;
   }
 
   :deep(.el-carousel__container) {

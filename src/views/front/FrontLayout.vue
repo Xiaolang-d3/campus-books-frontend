@@ -186,6 +186,15 @@ const cartCount = ref(0)
 const showMobileMenu = ref(false)
 const isScrolled = ref(false)
 
+const syncUserState = () => {
+  isLogin.value = !!localStorage.getItem('token')
+  username.value = localStorage.getItem('username') || ''
+  userAvatar.value = localStorage.getItem('avatar') || ''
+  if (!isLogin.value) {
+    cartCount.value = 0
+  }
+}
+
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 10
 }
@@ -206,8 +215,9 @@ const loadCartCount = async () => {
 
 const loadUserInfo = async () => {
   if (!isLogin.value) return
+  const uid = localStorage.getItem('userid')
+  if (!uid) return
   try {
-    const uid = localStorage.getItem('userid')
     const res = await http.get(`/yonghu/info/${uid}`)
     if (res.data?.code === 0 && res.data?.data) {
       if (res.data.data.avatar) {
@@ -229,7 +239,9 @@ const handleCmd = (cmd) => {
 const handleLogout = () => {
   localStorage.clear()
   isLogin.value = false
+  username.value = ''
   userAvatar.value = ''
+  cartCount.value = 0
   showMobileMenu.value = false
   router.push('/front/home')
 }
@@ -241,11 +253,17 @@ const handleAvatarUpdate = (event) => {
 watch(
   () => route.path,
   () => {
+    syncUserState()
     showMobileMenu.value = false
+    if (isLogin.value) {
+      loadCartCount()
+      loadUserInfo()
+    }
   }
 )
 
 onMounted(() => {
+  syncUserState()
   loadCartCount()
   loadUserInfo()
   window.addEventListener('avatar-updated', handleAvatarUpdate)

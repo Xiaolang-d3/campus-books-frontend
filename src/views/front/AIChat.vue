@@ -200,6 +200,11 @@
 
     <!-- 输入区域 -->
     <div class="chat-input-area">
+      <div v-if="!isLoggedIn()" class="login-notice">
+        <span>登录后可与小书继续对话，并获得更精准的校园二手书推荐。</span>
+        <el-button type="primary" link @click="goLogin">立即登录</el-button>
+      </div>
+
       <div class="input-topbar">
         <div class="quick-hints" v-if="!inputMessage.trim()">
           <span class="hint-label">快捷提问：</span>
@@ -257,6 +262,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ArrowLeft,
@@ -272,6 +278,8 @@ import {
   Collection
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+
+const router = useRouter()
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -316,6 +324,10 @@ const loadHistory = () => {
 }
 
 const isLoggedIn = () => Boolean(localStorage.getItem('token'))
+
+const goLogin = () => {
+  router.push('/login')
+}
 
 const appendAssistantMessage = async (content) => {
   messages.value.push({ role: 'assistant', content: '', typing: true })
@@ -487,7 +499,7 @@ const formatMessage = (content) => {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.*?)`/g, '<code class="inline-code">$1</code>')
     .replace(/^- (.*)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/(<li>[\s\S]*<\/li>)/, '<ul>$1</ul>')
 }
 
 onMounted(() => {
@@ -1068,6 +1080,20 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.login-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff7e6;
+  border: 1px solid #fde3b3;
+  color: #8c6d1f;
+  font-size: 13px;
+}
+
 .input-topbar {
   display: flex;
   align-items: flex-start;
@@ -1258,6 +1284,11 @@ onMounted(() => {
 
   .message-bubble-wrapper {
     max-width: 88%;
+  }
+
+  .login-notice {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .input-topbar {

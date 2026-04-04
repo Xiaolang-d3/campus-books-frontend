@@ -11,6 +11,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Vite cache
+.vite/
+
 # Logs
 *.log
 npm-debug.log*
@@ -22,6 +25,9 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Git
+.git_disabled/
 
 # OS
 .DS_Store
