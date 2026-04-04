@@ -54,7 +54,7 @@ const loadData = async () => {
 }
 const openReply = (row) => { form.value = { ...row }; dialogVisible.value = true }
 const handleSave = async () => {
-  const { data: res } = await http.post('/review/update', form.value)
+  const { data: res } = await http.post('/review/reply', { id: form.value.id, reply: form.value.reply })
   if (res.code === 0) { ElMessage.success('回复成功'); dialogVisible.value = false; loadData() } else ElMessage.error(res.msg)
 }
 const handleDelete = async (id) => { await ElMessageBox.confirm('确定删除？'); const { data: res } = await http.post('/review/delete', [id]); if (res.code === 0) { ElMessage.success('删除成功'); loadData() } }

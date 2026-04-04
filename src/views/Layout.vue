@@ -38,6 +38,8 @@
               <span>用户管理</span>
             </template>
             <el-menu-item index="/yonghu">用户列表</el-menu-item>
+            <el-menu-item index="/college">学院管理</el-menu-item>
+            <el-menu-item index="/major">专业管理</el-menu-item>
           </el-sub-menu>
         </template>
 
