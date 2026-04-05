@@ -120,11 +120,11 @@
             v-for="avatar in defaultAvatars" 
             :key="avatar.id"
             class="avatar-item"
-            :class="{ selected: tempAvatar === avatar.url }"
-            @click="selectDefaultAvatar(avatar.url)"
+            :class="{ selected: tempAvatar === avatar.storeKey }"
+            @click="selectDefaultAvatar(avatar.storeKey)"
           >
-            <img :src="avatar.url" :alt="avatar.name" />
-            <div v-if="tempAvatar === avatar.url" class="selected-badge">
+            <img :src="avatar.displayUrl" :alt="avatar.name" />
+            <div v-if="tempAvatar === avatar.storeKey" class="selected-badge">
               <el-icon><Check /></el-icon>
             </div>
           </div>
@@ -158,7 +158,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Camera, Upload, Document, Star, Location, Wallet, Sell, Check } from '@element-plus/icons-vue'
 import http from '@/utils/http'
-import { resolveAvatarUrl } from '@/utils/avatar'
+import { resolveAvatarUrl, getDefaultAvatars } from '@/utils/avatar'
 
 const router = useRouter()
 
@@ -181,38 +181,8 @@ const favoriteCount = ref(0)
 const addressCount = ref(0)
 const myBooksCount = ref(0)
 
-// 生成本地 SVG 头像（渐变背景 + emoji，不依赖外部API）
-const generateAvatar = (emoji, color1, color2) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${color1}"/><stop offset="100%" style="stop-color:${color2}"/>
-    </linearGradient></defs>
-    <circle cx="50" cy="50" r="50" fill="url(#g)"/>
-    <text x="50" y="62" text-anchor="middle" font-size="42">${emoji}</text>
-  </svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
-}
-
-const avatarConfigs = [
-  { emoji: '😊', c1: '#667eea', c2: '#764ba2' },
-  { emoji: '😎', c1: '#f093fb', c2: '#f5576c' },
-  { emoji: '🤗', c1: '#4facfe', c2: '#00f2fe' },
-  { emoji: '🦊', c1: '#43e97b', c2: '#38f9d7' },
-  { emoji: '🐱', c1: '#fa709a', c2: '#fee140' },
-  { emoji: '🐼', c1: '#a18cd1', c2: '#fbc2eb' },
-  { emoji: '🌟', c1: '#ffecd2', c2: '#fcb69f' },
-  { emoji: '🎓', c1: '#a1c4fd', c2: '#c2e9fb' },
-  { emoji: '📚', c1: '#d4fc79', c2: '#96e6a1' },
-  { emoji: '🎨', c1: '#f6d365', c2: '#fda085' },
-  { emoji: '🚀', c1: '#89f7fe', c2: '#66a6ff' },
-  { emoji: '🌈', c1: '#fddb92', c2: '#d1fdff' },
-]
-
-const defaultAvatars = avatarConfigs.map((c, i) => ({
-  id: i + 1,
-  url: generateAvatar(c.emoji, c.c1, c.c2),
-  name: `头像${i + 1}`,
-}))
+// 使用共享头像工具
+const defaultAvatars = getDefaultAvatars()
 
 const quickActions = computed(() => [
   { 
