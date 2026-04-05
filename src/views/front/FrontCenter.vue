@@ -180,21 +180,32 @@ const favoriteCount = ref(0)
 const addressCount = ref(0)
 const myBooksCount = ref(0)
 
-// 默认头像列表 - Personas 现代插画风格
-const defaultAvatars = [
-  { id: 1, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Alex', name: '头像1' },
-  { id: 2, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Sam', name: '头像2' },
-  { id: 3, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Jordan', name: '头像3' },
-  { id: 4, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Taylor', name: '头像4' },
-  { id: 5, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Morgan', name: '头像5' },
-  { id: 6, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Casey', name: '头像6' },
-  { id: 7, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Riley', name: '头像7' },
-  { id: 8, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Avery', name: '头像8' },
-  { id: 9, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Quinn', name: '头像9' },
-  { id: 10, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Skyler', name: '头像10' },
-  { id: 11, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Charlie', name: '头像11' },
-  { id: 12, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Dakota', name: '头像12' },
+// 生成本地 SVG 头像（不依赖外部API）
+const generateAvatar = (seed, bgColor, fgColor) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="${bgColor}"/><text x="50" y="58" text-anchor="middle" font-size="40" font-family="Arial,sans-serif" font-weight="bold" fill="${fgColor}">${seed}</text></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+const avatarConfigs = [
+  { initials: 'A', bg: '#4f46e5', fg: '#fff' },
+  { initials: 'B', bg: '#0891b2', fg: '#fff' },
+  { initials: 'C', bg: '#059669', fg: '#fff' },
+  { initials: 'D', bg: '#d97706', fg: '#fff' },
+  { initials: 'E', bg: '#dc2626', fg: '#fff' },
+  { initials: 'F', bg: '#7c3aed', fg: '#fff' },
+  { initials: 'G', bg: '#db2777', fg: '#fff' },
+  { initials: 'H', bg: '#2563eb', fg: '#fff' },
+  { initials: 'J', bg: '#0d9488', fg: '#fff' },
+  { initials: 'K', bg: '#ca8a04', fg: '#fff' },
+  { initials: 'L', bg: '#9333ea', fg: '#fff' },
+  { initials: 'M', bg: '#e11d48', fg: '#fff' },
 ]
+
+const defaultAvatars = avatarConfigs.map((c, i) => ({
+  id: i + 1,
+  url: generateAvatar(c.initials, c.bg, c.fg),
+  name: `头像${i + 1}`,
+}))
 
 const quickActions = computed(() => [
   { 
