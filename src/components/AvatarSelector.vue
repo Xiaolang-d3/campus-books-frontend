@@ -36,11 +36,11 @@
             v-for="avatar in defaultAvatars"
             :key="avatar.id"
             class="avatar-item"
-            :class="{ selected: tempAvatar === avatar.url }"
-            @click="selectAvatar(avatar.url)"
+            :class="{ selected: tempAvatar === avatar.storeKey }"
+            @click="selectAvatar(avatar.storeKey)"
           >
-            <img :src="avatar.url" :alt="avatar.name" />
-            <div v-if="tempAvatar === avatar.url" class="selected-badge">
+            <img :src="avatar.displayUrl" :alt="avatar.name" />
+            <div v-if="tempAvatar === avatar.storeKey" class="selected-badge">
               <el-icon><Check /></el-icon>
             </div>
           </div>
@@ -49,7 +49,7 @@
         <!-- 预览区 -->
         <div v-if="tempAvatar" class="preview-section">
           <div class="preview-label">预览</div>
-          <img :src="getImg(tempAvatar)" class="preview-image" />
+          <img :src="resolveAvatarUrl(tempAvatar)" class="preview-image" />
         </div>
       </div>
 
@@ -67,6 +67,7 @@
 import { ref, watch } from 'vue'
 import { Plus, Edit, Check, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { resolveAvatarUrl, getDefaultAvatars } from '@/utils/avatar'
 
 const props = defineProps({ modelValue: String })
 const emit = defineEmits(['update:modelValue'])
@@ -77,43 +78,12 @@ const tempAvatar = ref('')
 const uploadUrl = '/api/file/upload'
 const headers = { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
 
-// 生成本地 SVG 头像（渐变背景 + emoji，不依赖外部API）
-const generateAvatar = (emoji, color1, color2) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:${color1}"/><stop offset="100%" style="stop-color:${color2}"/>
-    </linearGradient></defs>
-    <circle cx="50" cy="50" r="50" fill="url(#g)"/>
-    <text x="50" y="62" text-anchor="middle" font-size="42">${emoji}</text>
-  </svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
-}
+const defaultAvatars = getDefaultAvatars()
 
-const avatarConfigs = [
-  { emoji: '😊', c1: '#667eea', c2: '#764ba2' },
-  { emoji: '😎', c1: '#f093fb', c2: '#f5576c' },
-  { emoji: '🤗', c1: '#4facfe', c2: '#00f2fe' },
-  { emoji: '🦊', c1: '#43e97b', c2: '#38f9d7' },
-  { emoji: '🐱', c1: '#fa709a', c2: '#fee140' },
-  { emoji: '🐼', c1: '#a18cd1', c2: '#fbc2eb' },
-  { emoji: '🌟', c1: '#ffecd2', c2: '#fcb69f' },
-  { emoji: '🎓', c1: '#a1c4fd', c2: '#c2e9fb' },
-  { emoji: '📚', c1: '#d4fc79', c2: '#96e6a1' },
-  { emoji: '🎨', c1: '#f6d365', c2: '#fda085' },
-  { emoji: '🚀', c1: '#89f7fe', c2: '#66a6ff' },
-  { emoji: '🌈', c1: '#fddb92', c2: '#d1fdff' },
-]
+const getImg = resolveAvatarUrl
 
-const defaultAvatars = avatarConfigs.map((c, i) => ({
-  id: i + 1,
-  url: generateAvatar(c.emoji, c.c1, c.c2),
-  name: `头像${i + 1}`,
-}))
-
-const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
-
-const selectAvatar = (url) => {
-  tempAvatar.value = url
+const selectAvatar = (storeKey) => {
+  tempAvatar.value = storeKey
 }
 
 const beforeUpload = (file) => {

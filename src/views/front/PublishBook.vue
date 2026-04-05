@@ -31,16 +31,15 @@
           <el-input v-model="form.publisher" placeholder="请输入出版社名称" />
         </el-form-item>
 
-        <el-form-item label="书籍分类" prop="category_name">
-          <el-input v-model="form.category_name" placeholder="如：计算机、文学、经济等" />
+        <el-form-item label="书籍分类" prop="category_id">
+          <el-select v-model="form.category_id" placeholder="请选择书籍分类">
+            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
         </el-form-item>
 
-        <el-form-item label="新旧程度" prop="condition_name">
-          <el-select v-model="form.condition_name" placeholder="请选择书籍成色">
-            <el-option label="全新" value="全新" />
-            <el-option label="九成新" value="九成新" />
-            <el-option label="八成新" value="八成新" />
-            <el-option label="七成新" value="七成新" />
+        <el-form-item label="新旧程度" prop="condition_id">
+          <el-select v-model="form.condition_id" placeholder="请选择书籍成色">
+            <el-option v-for="c in conditions" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
 
@@ -84,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import FileUpload from '@/components/FileUpload.vue'
@@ -93,6 +92,22 @@ import http from '@/utils/http'
 const router = useRouter()
 const formRef = ref(null)
 const submitting = ref(false)
+const categories = ref([])
+const conditions = ref([])
+
+const loadCategories = async () => {
+  try {
+    const { data: res } = await http.get('/bookCategory/option')
+    if (res.code === 0) categories.value = res.data || []
+  } catch { categories.value = [] }
+}
+
+const loadConditions = async () => {
+  try {
+    const { data: res } = await http.get('/conditionLevel/option')
+    if (res.code === 0) conditions.value = res.data || []
+  } catch { conditions.value = [] }
+}
 
 const form = reactive({
   title: '',
@@ -100,8 +115,8 @@ const form = reactive({
   author: '',
   isbn: '',
   publisher: '',
-  category_name: '',
-  condition_name: '全新',
+  category_id: '',
+  condition_id: '',
   price: 0,
   original_price: 0,
   stock: 1,
@@ -112,8 +127,8 @@ const rules = {
   title: [{ required: true, message: '请输入书籍名称', trigger: 'blur' }],
   isbn: [{ required: true, message: '请输入ISBN编号', trigger: 'blur' }],
   author: [{ required: true, message: '请输入作者姓名', trigger: 'blur' }],
-  category_name: [{ required: true, message: '请输入书籍分类', trigger: 'blur' }],
-  condition_name: [{ required: true, message: '请选择新旧程度', trigger: 'change' }],
+  category_id: [{ required: true, message: '请选择书籍分类', trigger: 'change' }],
+  condition_id: [{ required: true, message: '请选择新旧程度', trigger: 'change' }],
   price: [{ required: true, message: '请输入售价', trigger: 'blur' }],
   stock: [{ required: true, message: '请输入库存数量', trigger: 'blur' }],
 }
@@ -148,6 +163,10 @@ const resetForm = () => {
   if (!formRef.value) return
   formRef.value.resetFields()
 }
+
+onMounted(async () => {
+  await Promise.all([loadCategories(), loadConditions()])
+})
 </script>
 
 <style scoped>

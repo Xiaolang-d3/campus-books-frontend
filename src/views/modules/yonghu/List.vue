@@ -123,6 +123,7 @@ import { onMounted, reactive, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
 import AvatarSelector from '@/components/AvatarSelector.vue'
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 const colleges = ref([])
 const majors = ref([])
@@ -153,7 +154,7 @@ const formMajors = computed(() => {
   return majors.value.filter(m => m.college_id === form.value.college_id)
 })
 
-const getImg = (value) => (value ? (value.startsWith('http') ? value : `/api/file/download/${value}`) : '')
+const getImg = (v) => resolveAvatarUrl(v)
 
 const loadColleges = async () => {
   try {

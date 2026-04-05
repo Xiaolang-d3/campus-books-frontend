@@ -196,14 +196,14 @@ const createDefaultForm = () => ({
 
 const loadCategories = async () => {
   try {
-    const { data: res } = await http.get('/bookCategory/list')
+    const { data: res } = await http.get('/bookCategory/option')
     if (res.code === 0) categories.value = res.data || []
   } catch { categories.value = [] }
 }
 
 const loadConditions = async () => {
   try {
-    const { data: res } = await http.get('/conditionLevel/list')
+    const { data: res } = await http.get('/conditionLevel/option')
     if (res.code === 0) conditions.value = res.data || []
   } catch { conditions.value = [] }
 }

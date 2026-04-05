@@ -194,6 +194,7 @@ import {
   User, Close, MoreFilled, SwitchButton, MagicStick, ChatDotRound
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 const router = useRouter()
 const route = useRoute()
@@ -322,7 +323,7 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
 
-const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
+const getImg = (v) => resolveAvatarUrl(v)
 </script>
 
 <style scoped>

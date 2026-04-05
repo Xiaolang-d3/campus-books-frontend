@@ -158,6 +158,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Camera, Upload, Document, Star, Location, Wallet, Sell, Check } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 const router = useRouter()
 
@@ -251,7 +252,7 @@ const uploadHeaders = {
   Authorization: `Bearer ${localStorage.getItem('token') || ''}`
 }
 
-const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
+const getImg = (v) => resolveAvatarUrl(v)
 
 const loadUserInfo = async () => {
   const uid = localStorage.getItem('userid')
