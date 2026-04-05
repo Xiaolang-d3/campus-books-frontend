@@ -277,7 +277,7 @@ const loadStats = async () => {
   const uid = localStorage.getItem('userid')
   try {
     const [ordersRes, favRes, addrRes, booksRes] = await Promise.all([
-      http.get('/order/page', { params: { page: 1, limit: 1, viewType: 'buy', status: '未支付' } }),
+      http.get('/order/page', { params: { page: 1, limit: 1, viewType: 'buy' } }),
       http.get('/favorite/list', { params: { page: 1, limit: 1, userid: uid } }),
       http.get('/address/list', { params: { page: 1, limit: 100 } }),
       http.get('/book/list', { params: { page: 1, limit: 1, seller_id: uid } }),
