@@ -110,7 +110,7 @@ const defaultAvatars = avatarConfigs.map((c, i) => ({
   name: `头像${i + 1}`,
 }))
 
-const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
+const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
 
 const selectAvatar = (url) => {
   tempAvatar.value = url

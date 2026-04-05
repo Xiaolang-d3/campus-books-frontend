@@ -322,7 +322,7 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
 
-const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
+const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
 </script>
 
 <style scoped>

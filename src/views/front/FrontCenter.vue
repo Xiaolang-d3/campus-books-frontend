@@ -251,7 +251,7 @@ const uploadHeaders = {
   Authorization: `Bearer ${localStorage.getItem('token') || ''}`
 }
 
-const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : ''
+const getImg = (v) => v ? (v.startsWith('http') || v.startsWith('data:') ? v : `/api/file/download/${v}`) : ''
 
 const loadUserInfo = async () => {
   const uid = localStorage.getItem('userid')
