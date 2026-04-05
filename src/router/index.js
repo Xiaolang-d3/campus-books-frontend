@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const routes = [
   {
@@ -63,14 +64,29 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
+  
+  // 前台路由需要登录的页面
   if (to.meta?.auth && !token) {
     next('/login')
     return
   }
-  if (!to.path.startsWith('/front') && to.path !== '/login' && to.path !== '/register' && !token) {
-    next('/login')
-    return
+  
+  // 后台路由权限检查（非前台、非登录注册页面）
+  if (!to.path.startsWith('/front') && to.path !== '/login' && to.path !== '/register') {
+    // 未登录，跳转登录页
+    if (!token) {
+      next('/login')
+      return
+    }
+    // 已登录但不是管理员，禁止访问后台
+    if (role !== 'admin') {
+      ElMessage.warning('您没有权限访问管理后台')
+      next('/front/home')
+      return
+    }
   }
+  
   next()
 })
 

@@ -49,13 +49,13 @@
             <span>书籍管理</span>
           </template>
           <el-menu-item index="/shujifenlei" v-if="role === 'admin'">书籍分类</el-menu-item>
-          <el-menu-item index="/book">二手书籍</el-menu-item>
+          <el-menu-item index="/book">{{ role === 'admin' ? '二手书籍' : '我的书籍' }}</el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="order-mgmt">
           <template #title>
             <el-icon><ShoppingCart /></el-icon>
-            <span>订单管理</span>
+            <span>{{ role === 'admin' ? '订单管理' : '我的订单' }}</span>
           </template>
           <el-menu-item index="/orders/未支付">未支付</el-menu-item>
           <el-menu-item index="/orders/已支付">已支付</el-menu-item>
@@ -77,7 +77,7 @@
           </el-sub-menu>
         </template>
 
-        <el-menu-item index="/review">
+        <el-menu-item index="/review" v-if="role === 'admin'">
           <el-icon><ChatDotRound /></el-icon>
           <span>书籍评论</span>
         </el-menu-item>
@@ -97,10 +97,6 @@
         <span class="header-mobile-logo hide-on-desktop">二手书籍交易平台</span>
 
         <div class="header-right">
-          <el-button text @click="$router.push('/front/home')" class="front-entry-btn">
-            <el-icon><Shop /></el-icon>
-            <span class="hide-on-mobile">前台入口</span>
-          </el-button>
           <el-dropdown @command="handleCommand" trigger="click">
             <span class="user-info">
               <el-icon><UserFilled /></el-icon>
@@ -130,7 +126,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   HomeFilled, User, Reading, ShoppingCart, Document,
-  ChatDotRound, Fold, Expand, Shop, UserFilled, ArrowDown
+  ChatDotRound, Fold, Expand, UserFilled, ArrowDown
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -173,15 +169,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* —— 布局容器 —— */
+/* —— 设计变量：与登录页保持一致 —— */
 .admin-layout {
+  --admin-accent: #2563eb;
+  --admin-accent-hover: #1d4ed8;
+  --admin-ink: #0f172a;
+  --admin-muted: #64748b;
+  --admin-line: #e2e8f0;
+  --admin-bg: #f8fafc;
+  --admin-sidebar: #0f172a;
+  --admin-sidebar-hover: #1e293b;
+
   min-height: 100vh;
   position: relative;
+  background: var(--admin-bg);
 }
 
 /* —— 侧边栏 —— */
 .admin-aside {
-  background: #304156;
+  background: linear-gradient(165deg, var(--admin-sidebar) 0%, #1e293b 48%, var(--admin-sidebar) 100%);
   overflow-x: hidden;
   overflow-y: auto;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -190,6 +196,7 @@ onUnmounted(() => {
   height: 100vh;
   position: sticky;
   top: 0;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.12);
 }
 
 /* 移动端抽屉模式 */
@@ -198,7 +205,7 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   height: 100vh;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 4px 0 32px rgba(15, 23, 42, 0.2);
 }
 
 .admin-aside.is-collapsed {
@@ -208,26 +215,63 @@ onUnmounted(() => {
 
 /* —— Logo —— */
 .logo {
-  height: 60px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #f8fafc;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
-  padding: 0 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(248, 250, 252, 0.08);
   flex-shrink: 0;
 }
 
 .logo-text {
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  font-size: 16px;
+  letter-spacing: 0.06em;
 }
 
 .logo-icon-only {
-  font-size: 18px;
+  font-size: 20px;
+}
+
+/* —— 菜单样式 —— */
+.admin-aside :deep(.el-menu) {
+  border: none;
+  background: transparent;
+}
+
+.admin-aside :deep(.el-menu-item),
+.admin-aside :deep(.el-sub-menu__title) {
+  border-radius: 10px;
+  margin: 4px 12px;
+  padding-left: 20px !important;
+  color: rgba(248, 250, 252, 0.7);
+  transition: all 0.2s ease;
+}
+
+.admin-aside :deep(.el-menu-item:hover),
+.admin-aside :deep(.el-sub-menu__title:hover) {
+  background: rgba(248, 250, 252, 0.08) !important;
+  color: #f8fafc;
+}
+
+.admin-aside :deep(.el-menu-item.is-active) {
+  background: rgba(37, 99, 235, 0.15) !important;
+  color: #60a5fa !important;
+  font-weight: 500;
+}
+
+.admin-aside :deep(.el-sub-menu .el-menu-item) {
+  margin: 2px 12px 2px 24px;
+  padding-left: 32px !important;
+  font-size: 13px;
+}
+
+.admin-aside :deep(.el-icon) {
+  color: inherit;
 }
 
 /* —— 主内容区 —— */
@@ -242,40 +286,42 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--admin-line);
   background: #fff;
-  padding: 0 16px 0 0 !important;
-  height: 60px !important;
+  padding: 0 20px 0 0 !important;
+  height: 64px !important;
   gap: 16px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .menu-toggle {
   cursor: pointer;
   font-size: 20px;
-  color: #304156;
-  padding: 0 16px;
-  height: 60px;
+  color: var(--admin-ink);
+  padding: 0 20px;
+  height: 64px;
   display: flex;
   align-items: center;
   transition: color 0.2s;
 }
 
 .menu-toggle:hover {
-  color: #409eff;
+  color: var(--admin-accent);
 }
 
 .header-mobile-logo {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #304156;
+  color: var(--admin-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
   min-width: 0;
+  letter-spacing: 0.02em;
 }
 
 .header-right {
@@ -285,33 +331,25 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.front-entry-btn {
-  color: #409eff !important;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-}
-
 .user-info {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 4px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
   transition: background 0.2s;
-  color: #606266;
+  color: var(--admin-ink);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .user-info:hover {
-  background: #f5f7fa;
+  background: var(--admin-bg);
 }
 
 .user-name {
-  max-width: 80px;
+  max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -319,28 +357,56 @@ onUnmounted(() => {
 
 /* —— 主内容 —— */
 .admin-main {
-  background: #f0f2f5;
-  padding: 16px !important;
-  min-height: calc(100vh - 60px);
+  background: var(--admin-bg);
+  padding: 20px !important;
+  min-height: calc(100vh - 64px);
 }
 
 /* —— 遮罩层 —— */
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
   z-index: 2000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
+}
+
+/* —— 全局卡片样式优化 —— */
+.admin-main :deep(.el-card) {
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-main :deep(.el-button--primary) {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+.admin-main :deep(.el-button--primary:hover) {
+  background: var(--admin-accent-hover);
+  border-color: var(--admin-accent-hover);
 }
 
 /* —— 响应式 —— */
 @media (max-width: 768px) {
   .admin-header {
-    padding: 0 !important;
+    padding: 0 12px 0 0 !important;
+    height: 56px !important;
+  }
+
+  .menu-toggle {
+    padding: 0 12px;
+    height: 56px;
   }
 
   .admin-main {
     padding: 12px !important;
+    min-height: calc(100vh - 56px);
+  }
+
+  .logo {
+    height: 56px;
   }
 
   /* 移动端表格横向滚动 */

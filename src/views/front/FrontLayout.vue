@@ -20,6 +20,7 @@
           <a
             v-for="item in navItems"
             :key="item.path"
+            v-show="!item.auth || isLogin"
             :class="['nav-link', { active: $route.path === item.path }]"
             @click="$router.push(item.path)"
           >
@@ -31,36 +32,40 @@
         <div class="header-actions">
           <!-- 已登录 -->
           <template v-if="isLogin">
-            <div class="cart-btn" @click="$router.push('/front/cart')">
-              <el-badge :value="cartCount" :hidden="!cartCount" class="hide-on-mobile">
-                <el-icon :size="22"><ShoppingCart /></el-icon>
-              </el-badge>
-              <!-- 移动端购物车图标（无徽章） -->
-              <el-icon :size="22" class="show-on-mobile"><ShoppingCart /></el-icon>
-            </div>
-
-            <el-dropdown @command="handleCmd" trigger="click">
-              <div class="user-btn">
+            <el-dropdown trigger="click" @command="handleUserMenuCommand">
+              <div class="user-btn" title="个人中心">
                 <img
                   v-if="userAvatar"
                   :src="getImg(userAvatar)"
-                  class="avatar"
+                  :class="['avatar', { 'avatar-loaded': avatarLoaded }]"
                   alt="头像"
+                  @load="avatarLoaded = true"
+                  @error="handleAvatarError"
                 />
                 <div v-else class="avatar">{{ username[0]?.toUpperCase() }}</div>
-                <span class="username-text">{{ username }}</span>
-                <el-icon class="hide-on-mobile"><ArrowDown /></el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="center">个人中心</el-dropdown-item>
-                  <el-dropdown-item command="ai-chat">AI 助手</el-dropdown-item>
-                  <el-dropdown-item command="wallet">我的钱包</el-dropdown-item>
-                  <el-dropdown-item command="orders">我的订单</el-dropdown-item>
-                  <el-dropdown-item command="my-books">我的发布</el-dropdown-item>
-                  <el-dropdown-item command="storeup">我的收藏</el-dropdown-item>
-                  <el-dropdown-item command="address">收货地址</el-dropdown-item>
-                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                  <el-dropdown-item command="center">
+                    <el-icon><User /></el-icon>
+                    个人中心
+                  </el-dropdown-item>
+                  <el-dropdown-item command="orders">
+                    <el-icon><Document /></el-icon>
+                    我的订单
+                  </el-dropdown-item>
+                  <el-dropdown-item command="storeup">
+                    <el-icon><Star /></el-icon>
+                    我的收藏
+                  </el-dropdown-item>
+                  <el-dropdown-item command="address">
+                    <el-icon><Location /></el-icon>
+                    收货地址
+                  </el-dropdown-item>
+                  <el-dropdown-item divided command="logout">
+                    <el-icon><SwitchButton /></el-icon>
+                    退出登录
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -100,6 +105,7 @@
           <a
             v-for="item in navItems"
             :key="item.path"
+            v-show="!item.auth || isLogin"
             :class="['mobile-nav__link', { active: $route.path === item.path }]"
             @click="$router.push(item.path); showMobileMenu = false"
           >
@@ -121,7 +127,7 @@
           </a>
           <template v-else>
             <a class="mobile-nav__link" @click="$router.push('/front/ai-chat'); showMobileMenu = false">
-              <el-icon><MagicStick /></el-icon>
+              <el-icon><ChatDotRound /></el-icon>
               AI 助手
             </a>
             <a class="mobile-nav__link" @click="$router.push('/front/center'); showMobileMenu = false">
@@ -154,6 +160,18 @@
       <router-view />
     </el-main>
 
+    <!-- 购物车悬浮按钮 -->
+    <div v-if="isLogin && route.path !== '/front/cart'" class="cart-fab" @click="$router.push('/front/cart')" title="购物车">
+      <el-badge :value="cartCount" :hidden="!cartCount" class="cart-fab-badge">
+        <el-icon :size="24"><ShoppingCart /></el-icon>
+      </el-badge>
+    </div>
+
+    <!-- AI 助手悬浮按钮 -->
+    <div v-if="route.path !== '/front/ai-chat'" class="ai-fab" @click="$router.push('/front/ai-chat')" title="AI 助手">
+      <el-icon :size="26"><ChatDotRound /></el-icon>
+    </div>
+
     <!-- 底部 -->
     <el-footer v-if="route.path !== '/front/ai-chat'" class="front-footer">
       <div class="footer-inner">
@@ -171,9 +189,9 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ShoppingCart, ArrowDown,
+  ShoppingCart,
   HomeFilled, Reading, Document, Star, Location,
-  User, Close, MoreFilled, SwitchButton, MagicStick
+  User, Close, MoreFilled, SwitchButton, MagicStick, ChatDotRound
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
@@ -185,11 +203,16 @@ const userAvatar = ref(localStorage.getItem('avatar') || '')
 const cartCount = ref(0)
 const showMobileMenu = ref(false)
 const isScrolled = ref(false)
+const avatarLoaded = ref(false)
 
 const syncUserState = () => {
   isLogin.value = !!localStorage.getItem('token')
   username.value = localStorage.getItem('username') || ''
-  userAvatar.value = localStorage.getItem('avatar') || ''
+  const newAvatar = localStorage.getItem('avatar') || ''
+  if (newAvatar !== userAvatar.value) {
+    userAvatar.value = newAvatar
+    avatarLoaded.value = false // 重置加载状态
+  }
   if (!isLogin.value) {
     cartCount.value = 0
   }
@@ -202,7 +225,8 @@ const handleScroll = () => {
 const navItems = [
   { label: '首页', path: '/front/home' },
   { label: '书籍市场', path: '/front/books' },
-  { label: 'AI助手', path: '/front/ai-chat' },
+  { label: '我的订单', path: '/front/orders', auth: true },
+  { label: '我的收藏', path: '/front/storeup', auth: true },
 ]
 
 const loadCartCount = async () => {
@@ -220,20 +244,14 @@ const loadUserInfo = async () => {
   try {
     const res = await http.get(`/yonghu/info/${uid}`)
     if (res.data?.code === 0 && res.data?.data) {
-      if (res.data.data.avatar) {
-        userAvatar.value = res.data.data.avatar
-        localStorage.setItem('avatar', res.data.data.avatar)
+      // 只在头像真的变化时才更新，避免闪烁
+      const newAvatar = res.data.data.avatar || ''
+      if (newAvatar && newAvatar !== userAvatar.value) {
+        userAvatar.value = newAvatar
+        localStorage.setItem('avatar', newAvatar)
       }
     }
   } catch {}
-}
-
-const handleCmd = (cmd) => {
-  if (cmd === 'logout') {
-    handleLogout()
-    return
-  }
-  router.push(`/front/${cmd}`)
 }
 
 const handleLogout = () => {
@@ -246,8 +264,33 @@ const handleLogout = () => {
   router.push('/front/home')
 }
 
+const handleUserMenuCommand = (command) => {
+  switch (command) {
+    case 'center':
+      router.push('/front/center')
+      break
+    case 'orders':
+      router.push('/front/orders')
+      break
+    case 'storeup':
+      router.push('/front/storeup')
+      break
+    case 'address':
+      router.push('/front/address')
+      break
+    case 'logout':
+      handleLogout()
+      break
+  }
+}
+
 const handleAvatarUpdate = (event) => {
   userAvatar.value = event.detail.avatar
+}
+
+const handleAvatarError = () => {
+  // 头像加载失败时，清空头像显示默认
+  userAvatar.value = ''
 }
 
 watch(
@@ -257,7 +300,10 @@ watch(
     showMobileMenu.value = false
     if (isLogin.value) {
       loadCartCount()
-      loadUserInfo()
+      // 只在首次加载或头像为空时才重新获取用户信息
+      if (!userAvatar.value) {
+        loadUserInfo()
+      }
     }
   }
 )
@@ -279,97 +325,113 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 </script>
 
 <style scoped>
+/* —— 设计变量：与登录页保持一致 —— */
 * {
   box-sizing: border-box;
 }
 
 .front-layout {
+  --front-accent: #2563eb;
+  --front-accent-hover: #1d4ed8;
+  --front-ink: #0f172a;
+  --front-muted: #64748b;
+  --front-line: #e2e8f0;
+  --front-bg: #f8fafc;
+
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--front-bg);
 }
 
 /* —— 顶部导航 —— */
 .front-header {
-  background: rgba(255, 255, 255, 0.97);
+  background: #ffffff;
   padding: 0;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid var(--front-line);
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .front-header.scrolled {
-  border-bottom-color: #e5e5e5;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-bottom-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .header-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   height: 64px;
   padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 40px;
+  gap: 16px;
 }
 
 /* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.75;
 }
 
 .logo-icon {
-  width: 22px;
-  height: 22px;
-  color: var(--el-color-primary, #409eff);
+  width: 28px;
+  height: 28px;
+  color: var(--front-ink);
 }
 
 .logo-text {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--el-text-color-primary, #303133);
-  letter-spacing: 0;
+  color: var(--front-ink);
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  display: none;
 }
 
 /* 桌面端导航 */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 16px;
 }
 
 .nav-link {
-  padding: 6px 14px;
+  padding: 8px 16px;
   font-size: 14px;
-  color: var(--el-text-color-regular, #606266);
+  font-weight: 500;
+  color: var(--front-muted);
   cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
-  border-radius: 20px;
+  transition: all 0.2s ease;
+  border-radius: 10px;
   white-space: nowrap;
 }
 
 .nav-link:hover {
-  color: var(--el-color-primary, #409eff);
-  background-color: var(--el-fill-color-light, #f5f7fa);
+  color: var(--front-ink);
+  background-color: var(--front-bg);
 }
 
 .nav-link.active {
-  color: var(--el-color-primary, #409eff);
+  color: var(--front-accent);
   font-weight: 600;
-  background-color: var(--el-fill-color-light, #f5f7fa);
+  background: rgba(37, 99, 235, 0.08);
 }
 
 /* 右侧操作区 */
@@ -380,129 +442,139 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   flex-shrink: 0;
 }
 
-.cart-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: background 0.2s;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.cart-btn :deep(.el-badge) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cart-btn:hover {
-  background: var(--el-fill-color-light, #f5f7fa);
-}
-
-.cart-btn :deep(.el-badge__content) {
-  background: var(--el-color-primary, #409eff);
-  border: 2px solid #fff;
-  top: 2px;
-  right: 2px;
-}
-
 .user-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 20px;
+  gap: 10px;
+  padding: 4px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 2px solid transparent;
 }
 
 .user-btn:hover {
-  background: var(--el-fill-color-light, #f5f7fa);
+  border-color: var(--front-line);
+  transform: scale(1.05);
+}
+
+/* 下拉菜单样式优化 */
+:deep(.el-dropdown-menu) {
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+  border: 1px solid var(--front-line);
+}
+
+:deep(.el-dropdown-menu__item) {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background: var(--front-bg);
+  color: var(--front-accent);
+}
+
+:deep(.el-dropdown-menu__item .el-icon) {
+  font-size: 16px;
 }
 
 .avatar {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--el-color-primary, #409eff);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   object-fit: cover;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+/* 图片头像加载优化 */
+img.avatar {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+img.avatar.avatar-loaded {
+  opacity: 1;
 }
 
 .username-text {
-  font-size: 13px;
-  color: var(--el-text-color-regular, #606266);
-  font-weight: 500;
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 .auth-btn {
-  height: 36px;
-  padding: 0 18px;
-  border-radius: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .auth-btn.login {
   background: transparent;
-  color: var(--el-color-primary, #409eff);
-  border: 1px solid var(--el-border-color, #dcdfe6);
+  color: var(--front-ink);
+  border: 1px solid var(--front-line);
 }
 
 .auth-btn.login:hover {
-  border-color: var(--el-color-primary, #409eff);
-  background: var(--el-fill-color-light, #f5f7fa);
+  background: var(--front-bg);
+  border-color: #cbd5e1;
 }
 
 .auth-btn.signup {
-  background: var(--el-color-primary, #409eff);
+  background: var(--front-accent);
   color: #fff;
+  border: 1px solid var(--front-accent);
 }
 
 .auth-btn.signup:hover {
-  background: var(--el-color-primary-light-3, #79bbff);
+  background: var(--front-accent-hover);
+  border-color: var(--front-accent-hover);
 }
 
 /* 汉堡菜单按钮 */
 .hamburger-btn {
   display: none;
   font-size: 20px;
-  color: var(--el-text-color-primary, #303133);
+  color: var(--front-ink);
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .hamburger-btn:hover {
-  background: #f5f5f5;
+  background: var(--front-bg);
+  border-color: var(--front-line);
 }
 
 /* —— 移动端抽屉 —— */
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
   z-index: 2000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
 }
 
 .mobile-drawer {
@@ -515,7 +587,7 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   z-index: 2001;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  box-shadow: -4px 0 32px rgba(15, 23, 42, 0.15);
   overflow-y: auto;
 }
 
@@ -524,29 +596,33 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  height: 60px;
-  border-bottom: 1px solid #f0f0f0;
+  height: 64px;
+  border-bottom: 1px solid var(--front-line);
   flex-shrink: 0;
+}
+
+.mobile-drawer__header .logo-text {
+  display: inline;
 }
 
 .close-btn {
   font-size: 20px;
-  color: #737373;
+  color: var(--front-muted);
   cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  transition: background 0.2s;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: #f5f5f5;
-  color: #0a0a0a;
+  background: var(--front-bg);
+  color: var(--front-ink);
 }
 
 .mobile-nav {
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: 12px;
 }
 
 .mobile-nav--user {
@@ -559,30 +635,32 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   gap: 12px;
   padding: 12px 16px;
   font-size: 15px;
-  color: #0a0a0a;
+  color: var(--front-ink);
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
+  border-radius: 10px;
+  transition: all 0.2s;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .mobile-nav__link:hover {
-  background: #f5f5f5;
+  background: var(--front-bg);
 }
 
 .mobile-nav__link.active {
-  color: var(--el-color-primary, #409eff);
+  color: var(--front-accent);
   font-weight: 600;
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .mobile-nav__link--danger {
-  color: #ff4d4f;
+  color: #ef4444;
 }
 
 .mobile-drawer__divider {
   height: 1px;
-  background: #f0f0f0;
-  margin: 4px 16px;
+  background: var(--front-line);
+  margin: 8px 16px;
 }
 
 /* —— 侧边栏滑入动画 —— */
@@ -610,15 +688,101 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   padding: 20px 24px 0;
 }
 
+/* —— 购物车悬浮按钮 —— */
+.cart-fab {
+  position: fixed;
+  right: 32px;
+  bottom: 240px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--front-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  border: 2px solid var(--front-line);
+}
+
+.cart-fab:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+  border-color: var(--front-accent);
+  color: var(--front-accent);
+}
+
+.cart-fab:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.cart-fab-badge :deep(.el-badge__content) {
+  background: #ef4444;
+  border: 2px solid #fff;
+  font-weight: 600;
+  font-size: 11px;
+  min-width: 20px;
+  height: 20px;
+  line-height: 16px;
+  padding: 0 5px;
+  border-radius: 10px;
+  top: -2px;
+  right: -2px;
+}
+
+/* —— AI 助手悬浮按钮 —— */
+.ai-fab {
+  position: fixed;
+  right: 32px;
+  bottom: 168px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--front-accent) 0%, var(--front-accent-hover) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+}
+
+.ai-fab:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+}
+
+.ai-fab:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.ai-fab .el-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .front-footer {
   --el-footer-height: auto;
   --el-footer-padding: 0;
   height: auto;
   min-height: 0;
   overflow: visible;
-  background: #1a1a1a;
-  border-top: none;
-  padding: 24px 0;
+  background: linear-gradient(165deg, #0f172a 0%, #1e293b 48%, #0f172a 100%);
+  border-top: 1px solid rgba(248, 250, 252, 0.08);
+  padding: 28px 0;
   margin-top: auto;
 }
 
@@ -632,25 +796,25 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .footer-logo-text {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: -0.01em;
+  color: rgba(248, 250, 252, 0.75);
+  letter-spacing: 0.02em;
 }
 
 .footer-divider-line {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(248, 250, 252, 0.3);
   font-size: 13px;
 }
 
 .footer-copy {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(248, 250, 252, 0.5);
 }
 
 /* —— 响应式断点 —— */
@@ -658,7 +822,7 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 /* 平板断点（导航隐藏，改用汉堡） */
 @media (max-width: 968px) {
   .header-inner {
-    gap: 16px;
+    gap: 12px;
   }
 
   .nav-links {
@@ -674,23 +838,51 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 @media (max-width: 768px) {
   .header-inner {
     height: 56px;
-    padding: 0 16px;
-    gap: 12px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 26px;
+    height: 26px;
   }
 
   .logo-text {
-    font-size: 15px;
-    max-width: 80px;
+    display: none;
+  }
+
+  .header-search-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-search-icon .el-icon {
+    font-size: 18px;
   }
 
   .username-text {
     display: none;
   }
 
-  .auth-btn {
-    padding: 0 14px;
+  .user-btn {
+    padding: 4px 10px 4px 4px;
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
     font-size: 13px;
-    height: 34px;
+  }
+
+  .auth-btn {
+    padding: 0 16px;
+    font-size: 13px;
+    height: 36px;
+  }
+
+  .hamburger-btn {
+    padding: 8px;
   }
 
   .front-main {
@@ -700,6 +892,31 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
 
   .front-main--chat {
     padding: 0;
+  }
+
+  .cart-fab {
+    right: 20px;
+    bottom: 228px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .cart-fab-badge :deep(.el-badge__content) {
+    font-size: 10px;
+    min-width: 18px;
+    height: 18px;
+    line-height: 14px;
+  }
+
+  .ai-fab {
+    right: 20px;
+    bottom: 156px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .ai-fab .el-icon {
+    font-size: 22px;
   }
 
   .front-footer {
@@ -725,12 +942,12 @@ const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`)
   }
 
   .logo-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
   }
 
   .logo-text {
-    font-size: 15px;
+    display: none;
   }
 
   .auth-btn {

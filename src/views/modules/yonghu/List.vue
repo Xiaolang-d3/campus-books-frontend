@@ -46,6 +46,11 @@
         <el-table-column prop="balance" label="余额" width="100">
           <template #default="{ row }">¥{{ row.balance }}</template>
         </el-table-column>
+        <el-table-column prop="addtime" label="注册时间" width="180">
+          <template #default="{ row }">
+            {{ row.addtime ? new Date(row.addtime).toLocaleString('zh-CN') : '' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="openDialog(row)">编辑</el-button>
@@ -99,7 +104,7 @@
           <el-input v-model="form.phone" />
         </el-form-item>
         <el-form-item label="头像">
-          <FileUpload v-model="form.avatar" />
+          <AvatarSelector v-model="form.avatar" />
         </el-form-item>
         <el-form-item label="余额">
           <el-input-number v-model="form.balance" :min="0" :precision="2" />
@@ -117,7 +122,7 @@
 import { onMounted, reactive, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
-import FileUpload from '@/components/FileUpload.vue'
+import AvatarSelector from '@/components/AvatarSelector.vue'
 
 const colleges = ref([])
 const majors = ref([])

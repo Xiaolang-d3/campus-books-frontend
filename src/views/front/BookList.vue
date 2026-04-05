@@ -272,16 +272,17 @@ onMounted(async () => {
 .book-card {
   cursor: pointer;
   margin-bottom: 24px;
-  transition: all 0.2s;
-  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
-  box-shadow: none;
+  border: 2px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .book-card:hover {
-  transform: translateY(-4px);
-  border-color: #d4d4d4;
+  transform: translateY(-8px);
+  border-color: #0a0a0a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 .book-img-wrapper {
@@ -294,11 +295,11 @@ onMounted(async () => {
   width: 100%;
   height: 240px;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .book-card:hover .book-img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .book-overlay {

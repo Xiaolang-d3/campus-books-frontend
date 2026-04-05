@@ -41,6 +41,7 @@
         <el-table-column prop="isbn" label="ISBN" min-width="140" />
         <el-table-column prop="title" label="书籍名称" min-width="180" />
         <el-table-column prop="author" label="作者" min-width="120" />
+        <el-table-column prop="publisher" label="出版社" min-width="140" />
         <el-table-column label="封面" width="92">
           <template #default="{ row }">
             <el-image
@@ -66,6 +67,11 @@
             <el-tag v-if="row.status === 1" type="success">上架</el-tag>
             <el-tag v-else-if="row.status === 0" type="info">下架</el-tag>
             <el-tag v-else type="warning">已售出</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="addtime" label="添加时间" width="180">
+          <template #default="{ row }">
+            {{ row.addtime ? new Date(row.addtime).toLocaleString('zh-CN') : '' }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="240" fixed="right">

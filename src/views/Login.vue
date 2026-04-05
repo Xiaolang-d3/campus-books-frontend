@@ -121,6 +121,13 @@ const rules = {
 const handleLogin = () => {
   formRef.value.validate(async (valid) => {
     if (!valid) return
+    
+    // 管理员登录时检查账号
+    if (form.role === 'admin' && form.username !== 'admin') {
+      ElMessage.warning('管理员账号只能是 admin，普通用户请选择"学生用户"身份登录')
+      return
+    }
+    
     loading.value = true
     try {
       const { data: res } = await http.post('/login', form)
@@ -130,12 +137,13 @@ const handleLogin = () => {
       }
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('role', form.role)
-      localStorage.setItem('tableName', form.role === 'admin' ? 'admin' : 'yonghu')
+      localStorage.setItem('tableName', form.role === 'admin' ? 'admin' : 'user')
       localStorage.setItem('userid', res.data.userid)
       localStorage.setItem('username', res.data.username)
       ElMessage.success('登录成功，欢迎回来！')
       setTimeout(() => {
-        router.push(form.role === 'admin' ? '/' : '/front/home')
+        // 管理员跳转到后台，普通用户跳转到前台
+        router.push(form.role === 'admin' ? '/home' : '/front/home')
       }, 400)
     } catch (error) {
       ElMessage.error(error.response?.data?.msg || '登录失败，请检查网络连接')

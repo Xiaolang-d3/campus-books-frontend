@@ -173,6 +173,9 @@ const handleRecharge = async () => {
     rechargeForm.value.amount = 100
     await loadBalance()
     await loadLogs()
+    
+    // 触发余额更新事件，通知其他页面刷新
+    window.dispatchEvent(new Event('balance-updated'))
   } catch (e) {
     if (e !== 'cancel') {
       ElMessage.error(e.response?.data?.msg || '充值失败')

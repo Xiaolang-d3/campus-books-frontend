@@ -88,7 +88,15 @@
       <div v-else class="comment-list">
         <div v-for="comment in comments" :key="comment.id" class="comment-item">
           <div class="comment-head">
-            <span class="comment-user">{{ comment.nickname || '匿名用户' }}</span>
+            <div>
+              <span class="comment-user">{{ comment.nickname || '匿名用户' }}</span>
+              <el-rate
+                v-model="comment.rating"
+                disabled
+                :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                style="display: inline-block; margin-left: 12px; vertical-align: middle"
+              />
+            </div>
             <span class="comment-time">{{ formatDate(comment.addtime) }}</span>
           </div>
           <div class="comment-content">{{ comment.content }}</div>
@@ -98,6 +106,10 @@
 
       <el-divider v-if="isLogin" />
       <div v-if="isLogin">
+        <div style="margin-bottom: 12px">
+          <span style="font-size: 14px; font-weight: 500; color: #0a0a0a; margin-right: 12px">评分：</span>
+          <el-rate v-model="commentRating" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" />
+        </div>
         <el-input
           v-model="commentText"
           type="textarea"
@@ -139,6 +151,7 @@ const buyNum = ref(1)
 const isFav = ref(false)
 const comments = ref([])
 const commentText = ref('')
+const commentRating = ref(5)
 const isLogin = !!localStorage.getItem('token')
 
 const getImg = (value) => {
@@ -293,6 +306,10 @@ const toggleFav = async () => {
 }
 
 const submitComment = async () => {
+  if (!commentRating.value || commentRating.value < 1) {
+    ElMessage.warning('请先选择评分')
+    return
+  }
   if (!commentText.value.trim()) {
     ElMessage.warning('请输入评论内容')
     return
@@ -303,10 +320,12 @@ const submitComment = async () => {
     const { data: res } = await http.post('/review/add', {
       book_id: Number(route.params.id),
       user_id: Number(localStorage.getItem('userid')),
+      rating: commentRating.value,
       content: commentText.value.trim(),
     })
     if (res.code === 0) {
       commentText.value = ''
+      commentRating.value = 5
       ElMessage.success('评论成功')
       await loadComments()
     } else {
@@ -335,36 +354,55 @@ onMounted(async () => {
 
 .detail-card,
 .section-card {
-  margin-bottom: 24px;
-  border-radius: 4px;
-  border: 1px solid #e5e5e5;
-  box-shadow: none;
+  margin-bottom: 32px;
+  border-radius: 12px;
+  border: 2px solid #f0f0f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+.detail-card:hover,
+.section-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .detail-card :deep(.el-card__body),
 .section-card :deep(.el-card__body) {
-  padding: 32px;
+  padding: 40px;
 }
 
 .section-card :deep(.el-card__header) {
-  border-bottom: 1px solid #e5e5e5;
-  padding: 20px 32px;
-  font-size: 18px;
-  font-weight: 600;
+  border-bottom: 2px solid #f0f0f0;
+  padding: 24px 40px;
+  font-size: 20px;
+  font-weight: 700;
   color: #0a0a0a;
+  letter-spacing: -0.01em;
 }
 
 .book-image-wrapper {
   position: relative;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
+  border: 2px solid #f0f0f0;
   background: #fafafa;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.book-image-wrapper:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transform: scale(1.02);
 }
 
 .book-image {
   width: 100%;
   display: block;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-image-wrapper:hover .book-image {
+  transform: scale(1.05);
 }
 
 .image-overlay {
@@ -455,29 +493,36 @@ onMounted(async () => {
 }
 
 .action-buttons :deep(.el-button) {
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-buttons :deep(.el-button--warning) {
-  background: #0a0a0a;
+  background: linear-gradient(135deg, #0a0a0a 0%, #2a2a2a 100%);
   border-color: #0a0a0a;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .action-buttons :deep(.el-button--warning:hover) {
-  background: #2a2a2a;
+  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
   border-color: #2a2a2a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .action-buttons :deep(.el-button--danger) {
-  background: #0a0a0a;
+  background: linear-gradient(135deg, #0a0a0a 0%, #2a2a2a 100%);
   border-color: #0a0a0a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .action-buttons :deep(.el-button--danger:hover) {
-  background: #2a2a2a;
+  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
   border-color: #2a2a2a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .action-buttons :deep(.el-button--default) {

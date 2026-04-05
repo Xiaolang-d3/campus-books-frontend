@@ -33,6 +33,25 @@
       </div>
     </el-card>
 
+    <!-- 快捷功能卡片 -->
+    <div class="quick-actions">
+      <el-card 
+        v-for="action in quickActions" 
+        :key="action.path"
+        class="action-card"
+        shadow="hover"
+        @click="$router.push(action.path)"
+      >
+        <div class="action-icon">
+          <el-icon :size="32">
+            <component :is="action.icon" />
+          </el-icon>
+        </div>
+        <div class="action-title">{{ action.title }}</div>
+        <div class="action-count" v-if="action.count !== undefined">{{ action.count }}</div>
+      </el-card>
+    </div>
+
     <el-card class="info-card">
       <template #header>
         <div class="card-header">
@@ -74,26 +93,44 @@
     <el-dialog 
       v-model="showUploadDialog" 
       title="更换头像" 
-      width="400px"
+      width="500px"
       :close-on-click-modal="false"
     >
-      <div class="upload-section">
-        <el-upload
-          :action="uploadUrl"
-          :headers="uploadHeaders"
-          :show-file-list="false"
-          :on-success="handleUploadSuccess"
-          :before-upload="beforeUpload"
-          accept="image/*"
-          drag
-        >
-          <div class="upload-area">
-            <el-icon class="upload-icon"><Upload /></el-icon>
-            <div class="upload-text">点击或拖拽图片到此处上传</div>
-            <div class="upload-hint">支持 JPG、PNG 格式，大小不超过 2MB</div>
+      <div class="avatar-selection">
+        <div class="avatars-grid">
+          <!-- 上传头像按钮 -->
+          <div class="avatar-item upload-item">
+            <el-upload
+              :action="uploadUrl"
+              :headers="uploadHeaders"
+              :show-file-list="false"
+              :on-success="handleUploadSuccess"
+              :before-upload="beforeUpload"
+              accept="image/*"
+            >
+              <div class="upload-trigger">
+                <el-icon :size="32"><Upload /></el-icon>
+                <div class="upload-label">上传</div>
+              </div>
+            </el-upload>
           </div>
-        </el-upload>
-        
+
+          <!-- 默认头像列表 -->
+          <div 
+            v-for="avatar in defaultAvatars" 
+            :key="avatar.id"
+            class="avatar-item"
+            :class="{ selected: tempAvatar === avatar.url }"
+            @click="selectDefaultAvatar(avatar.url)"
+          >
+            <img :src="avatar.url" :alt="avatar.name" />
+            <div v-if="tempAvatar === avatar.url" class="selected-badge">
+              <el-icon><Check /></el-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- 预览区 -->
         <div v-if="tempAvatar" class="preview-section">
           <div class="preview-label">预览</div>
           <img :src="getImg(tempAvatar)" class="preview-image" />
@@ -101,7 +138,7 @@
       </div>
       
       <template #footer>
-        <el-button @click="showUploadDialog = false">取消</el-button>
+        <el-button @click="showUploadDialog = false; tempAvatar = ''">取消</el-button>
         <el-button 
           type="primary" 
           @click="saveAvatar" 
@@ -116,10 +153,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, markRaw } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Camera, Upload } from '@element-plus/icons-vue'
+import { Camera, Upload, Document, Star, Location, Wallet, Sell, Check } from '@element-plus/icons-vue'
 import http from '@/utils/http'
+
+const router = useRouter()
 
 const form = ref({
   student_no: '',
@@ -134,6 +174,60 @@ const saving = ref(false)
 const showUploadDialog = ref(false)
 const tempAvatar = ref('')
 const uploading = ref(false)
+
+const orderCount = ref(0)
+const favoriteCount = ref(0)
+const addressCount = ref(0)
+const myBooksCount = ref(0)
+
+// 默认头像列表 - Personas 现代插画风格
+const defaultAvatars = [
+  { id: 1, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Alex', name: '头像1' },
+  { id: 2, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Sam', name: '头像2' },
+  { id: 3, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Jordan', name: '头像3' },
+  { id: 4, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Taylor', name: '头像4' },
+  { id: 5, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Morgan', name: '头像5' },
+  { id: 6, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Casey', name: '头像6' },
+  { id: 7, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Riley', name: '头像7' },
+  { id: 8, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Avery', name: '头像8' },
+  { id: 9, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Quinn', name: '头像9' },
+  { id: 10, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Skyler', name: '头像10' },
+  { id: 11, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Charlie', name: '头像11' },
+  { id: 12, url: 'https://api.dicebear.com/7.x/personas/svg?seed=Dakota', name: '头像12' },
+]
+
+const quickActions = computed(() => [
+  { 
+    title: '我的订单', 
+    path: '/front/orders', 
+    icon: markRaw(Document),
+    count: orderCount.value 
+  },
+  { 
+    title: '我的收藏', 
+    path: '/front/storeup', 
+    icon: markRaw(Star),
+    count: favoriteCount.value 
+  },
+  { 
+    title: '收货地址', 
+    path: '/front/address', 
+    icon: markRaw(Location),
+    count: addressCount.value 
+  },
+  { 
+    title: '我的钱包', 
+    path: '/front/wallet', 
+    icon: markRaw(Wallet),
+    count: undefined 
+  },
+  { 
+    title: '我卖的书', 
+    path: '/front/my-books', 
+    icon: markRaw(Sell),
+    count: myBooksCount.value 
+  },
+])
 
 const uploadUrl = '/api/file/upload'
 const uploadHeaders = {
@@ -151,9 +245,46 @@ const loadUserInfo = async () => {
       ...res.data,
     }
   }
+  // 单独获取最新余额
+  try {
+    const balanceRes = await http.get('/wallet/balance')
+    if (balanceRes.data?.code === 0) {
+      form.value.balance = balanceRes.data.data.balance || 0
+    }
+  } catch (e) {
+    console.error('获取余额失败', e)
+  }
 }
 
-onMounted(loadUserInfo)
+const loadStats = async () => {
+  const uid = localStorage.getItem('userid')
+  try {
+    const [ordersRes, favRes, addrRes, booksRes] = await Promise.all([
+      http.get('/order/page', { params: { page: 1, limit: 1, viewType: 'buy', status: '未支付' } }),
+      http.get('/favorite/list', { params: { page: 1, limit: 1, userid: uid } }),
+      http.get('/address/list', { params: { page: 1, limit: 100 } }),
+      http.get('/book/list', { params: { page: 1, limit: 1, seller_id: uid } }),
+    ])
+    orderCount.value = ordersRes.data?.data?.total || 0
+    favoriteCount.value = favRes.data?.data?.total || 0
+    addressCount.value = addrRes.data?.data?.list?.length || 0
+    myBooksCount.value = booksRes.data?.data?.total || 0
+  } catch (e) {
+    console.error('加载统计数据失败', e)
+  }
+}
+
+onMounted(() => {
+  loadUserInfo()
+  loadStats()
+  
+  // 监听余额更新事件
+  window.addEventListener('balance-updated', loadUserInfo)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('balance-updated', loadUserInfo)
+})
 
 const beforeUpload = (file) => {
   const isImage = file.type.startsWith('image/')
@@ -179,6 +310,10 @@ const handleUploadSuccess = (response) => {
   }
 }
 
+const selectDefaultAvatar = (avatarUrl) => {
+  tempAvatar.value = avatarUrl
+}
+
 const saveAvatar = async () => {
   if (!tempAvatar.value) return
   
@@ -186,6 +321,8 @@ const saveAvatar = async () => {
   try {
     const { data: res } = await http.post('/yonghu/update', {
       id: form.value.id,
+      student_no: form.value.student_no,
+      name: form.value.name,
       avatar: tempAvatar.value
     })
     
@@ -242,7 +379,13 @@ const save = async () => {
 
 .profile-card {
   margin-bottom: 24px;
-  border-radius: 4px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.profile-card :deep(.el-card__body) {
+  padding: 0;
 }
 
 .profile-header {
@@ -342,8 +485,58 @@ const save = async () => {
   letter-spacing: -0.02em;
 }
 
+/* 快捷功能卡片 */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.action-card {
+  cursor: pointer;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.action-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+}
+
+.action-card :deep(.el-card__body) {
+  padding: 28px 20px;
+}
+
+.action-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: #2563eb;
+}
+
+.action-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.action-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+  letter-spacing: -0.01em;
+}
+
 .info-card {
-  border-radius: 4px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .card-header {
@@ -358,58 +551,124 @@ const save = async () => {
   padding: 24px 0;
 }
 
-/* 上传对话框 */
-.upload-section {
-  padding: 24px 0;
+/* 头像选择 */
+.avatar-selection {
+  padding: 20px 0;
 }
 
-.upload-area {
-  padding: 48px 24px;
-  text-align: center;
-  border: 2px dashed #e5e5e5;
-  border-radius: 4px;
-  transition: all 0.2s;
+.avatars-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatar-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
   cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s;
 }
 
-.upload-area:hover {
-  border-color: #0a0a0a;
+.avatar-item:hover {
+  border-color: #2563eb;
+  transform: scale(1.05);
 }
 
-.upload-icon {
-  font-size: 48px;
-  color: #737373;
-  margin-bottom: 16px;
+.avatar-item.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.upload-text {
+.avatar-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.selected-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
   font-size: 14px;
-  color: #0a0a0a;
-  margin-bottom: 8px;
+  border: 2px solid #fff;
 }
 
-.upload-hint {
+/* 上传按钮 */
+.avatar-item.upload-item {
+  background: #f8fafc;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-item.upload-item:hover {
+  background: #f1f5f9;
+  border-color: #2563eb;
+}
+
+.avatar-item.upload-item :deep(.el-upload) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.avatar-item.upload-item:hover .upload-trigger {
+  color: #2563eb;
+}
+
+.upload-trigger .el-icon {
+  margin-bottom: 4px;
+}
+
+.upload-label {
   font-size: 12px;
-  color: #a3a3a3;
+  font-weight: 500;
 }
 
+/* 预览区 */
 .preview-section {
-  margin-top: 24px;
   text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .preview-label {
   font-size: 13px;
-  color: #737373;
+  color: #64748b;
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .preview-image {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e5e5e5;
+  border: 2px solid #e2e8f0;
 }
 
 /* 响应式 */
@@ -430,6 +689,10 @@ const save = async () => {
 
   .wallet-section {
     text-align: center;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

@@ -3,29 +3,22 @@
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
+        <h1 class="hero-title">校园二手专业书籍交易平台</h1>
+        <p class="hero-subtitle">让知识在校园流动，让学习更加经济</p>
+        
+        <!-- 搜索框 -->
         <div class="hero-search">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索书籍、作者、ISBN..."
+          <input 
+            v-model="searchQuery" 
+            class="search-input" 
+            placeholder="搜索书名、作者、ISBN..." 
             @keyup.enter="handleSearch"
-            class="search-input"
           />
-          <button @click="handleSearch" class="search-btn">
-            <span>搜索</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 2L10 8L6 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <button class="search-btn" @click="handleSearch">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </button>
-        </div>
-        <div class="hero-tags">
-          <button
-            v-for="tag in quickTags"
-            :key="tag"
-            class="tag-btn"
-            @click="quickSearch(tag)"
-          >
-            {{ tag }}
+            搜索
           </button>
         </div>
       </div>
@@ -42,75 +35,76 @@
       </div>
     </section>
 
-    <!-- Categories Section -->
-    <section class="categories-section" v-if="categories.length">
+    <!-- 快捷分类卡片 -->
+    <section class="quick-categories" v-if="categories.length">
       <div class="section-header">
         <h2 class="section-title">热门分类</h2>
+        <p class="section-subtitle">快速找到你需要的专业书籍</p>
       </div>
-      <div class="categories-grid">
+      <div class="quick-categories-grid">
         <div 
-          v-for="category in categories.slice(0, 6)" 
+          v-for="category in categories.slice(0, 8)" 
           :key="category.id"
-          class="category-card"
+          class="quick-category-card"
           @click="searchByCategory(category)"
         >
-          <div class="category-icon">
-            <el-icon class="category-icon-el" :size="32">
+          <div class="quick-category-icon">
+            <el-icon :size="32">
               <component :is="getCategoryIcon(category.name)" />
             </el-icon>
           </div>
-          <div class="category-name">{{ category.name }}</div>
+          <div class="quick-category-name">{{ category.name }}</div>
         </div>
       </div>
     </section>
 
     <!-- Books Section -->
-    <section class="books-section">
+        <section class="books-section">
       <div class="section-header">
         <h2 class="section-title">最新上架</h2>
-        <router-link to="/front/books" class="view-all">
-          查看全部
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </router-link>
-      </div>
-
-      <div v-if="loading" class="books-grid">
-        <div v-for="i in 8" :key="i" class="book-skeleton">
-          <div class="skeleton-image"></div>
-          <div class="skeleton-content">
-            <div class="skeleton-text"></div>
-            <div class="skeleton-text short"></div>
-            <div class="skeleton-text shorter"></div>
+            <router-link to="/front/books" class="view-all">
+              查看全部
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </router-link>
           </div>
-        </div>
-      </div>
 
-      <div v-else-if="books.length" class="books-grid">
-        <div 
-          v-for="book in books" 
-          :key="book.id" 
-          class="book-card"
-          @click="$router.push(`/front/book/${book.id}`)"
-        >
-          <div class="book-image">
-            <img :src="getImg(book.cover)" :alt="book.title" loading="lazy" />
-            <div v-if="!book.stock" class="sold-badge">售罄</div>
-            <div v-else-if="book.stock <= 3" class="limited-badge">仅剩{{ book.stock }}件</div>
-          </div>
-          <div class="book-info">
-            <h3 class="book-title">{{ book.title }}</h3>
-            <p class="book-author">{{ book.author }}</p>
-            <div class="book-footer">
-              <span class="book-price">¥{{ book.price }}</span>
-              <span class="book-condition">{{ book.xinjiuchengdu }}</span>
+          <div v-if="loading" class="books-grid">
+            <div v-for="i in 8" :key="i" class="book-skeleton">
+              <div class="skeleton-image"></div>
+              <div class="skeleton-content">
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+                <div class="skeleton-text shorter"></div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <el-empty v-else description="暂无书籍" />
+          <div v-else-if="books.length" class="books-grid">
+            <div 
+              v-for="book in books" 
+              :key="book.id" 
+              class="book-card"
+              @click="$router.push(`/front/book/${book.id}`)"
+            >
+              <div class="book-image">
+                <img :src="getImg(book.cover)" :alt="book.title" loading="lazy" />
+                <div v-if="!book.stock" class="sold-badge">售罄</div>
+                <div v-else-if="book.stock <= 3" class="limited-badge">仅剩{{ book.stock }}件</div>
+              </div>
+              <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <p class="book-author">{{ book.author }}</p>
+                <div class="book-footer">
+                  <span class="book-price">¥{{ book.price }}</span>
+                  <span class="book-condition">{{ book.xinjiuchengdu }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <el-empty v-else description="暂无书籍" />
     </section>
 
     <!-- Features Section：Element Plus 风格 -->
@@ -238,92 +232,165 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* —— 设计变量：与登录页保持一致 —— */
 .minimal-home {
+  --home-accent: #2563eb;
+  --home-accent-hover: #1d4ed8;
+  --home-ink: #0f172a;
+  --home-muted: #64748b;
+  --home-line: #e2e8f0;
+  --home-bg: #f8fafc;
+
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 80px;
 }
 
-/* Hero Section */
-.hero {
-  padding: 60px 0 48px;
-  text-align: center;
+/* 快捷分类卡片 */
+.quick-categories {
+  margin-bottom: 32px;
 }
 
+.quick-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.quick-category-card {
+  background: linear-gradient(135deg, #fff 0%, var(--home-bg) 100%);
+  border: 1px solid var(--home-line);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.quick-category-card:hover {
+  border-color: var(--home-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+}
+
+.quick-category-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--home-accent);
+}
+
+.quick-category-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--home-ink);
+}
+
+/* Hero Section */
+.hero {
+  padding: 60px 0 50px;
+  text-align: center;
+  background: linear-gradient(180deg, #ffffff 0%, var(--home-bg) 100%);
+  margin: -32px -24px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--home-ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 15px;
+  color: var(--home-muted);
+  margin: 0 0 28px;
+  font-weight: 500;
+}
+
+/* 搜索框 */
 .hero-search {
   max-width: 600px;
-  margin: 0 auto 24px;
+  margin: 0 auto;
   display: flex;
   gap: 12px;
 }
 
 .search-input {
   flex: 1;
-  height: 56px;
-  padding: 0 24px;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: all 0.2s;
-  background: #fafafa;
+  height: 52px;
+  padding: 0 20px;
+  border: 2px solid var(--home-line);
+  border-radius: 26px;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fff;
+  color: var(--home-ink);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #0a0a0a;
+  border-color: var(--home-accent);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 4px 12px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
 }
 
 .search-input::placeholder {
-  color: #a3a3a3;
+  color: var(--home-muted);
 }
 
 .search-btn {
-  height: 56px;
-  padding: 0 32px;
-  background: #0a0a0a;
+  height: 52px;
+  padding: 0 28px;
+  background: var(--home-accent);
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
+  border-radius: 26px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  white-space: nowrap;
 }
 
 .search-btn:hover {
-  background: #2a2a2a;
+  background: var(--home-accent-hover);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  transform: translateY(-2px);
 }
 
 .search-btn:active {
-  transform: scale(0.98);
-}
-
-.hero-tags {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.tag-btn {
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid #e5e5e5;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #737373;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tag-btn:hover {
-  border-color: #0a0a0a;
-  color: #0a0a0a;
-  background: #fafafa;
+  transform: translateY(0);
 }
 
 /* Stats Section */
@@ -331,74 +398,86 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 80px;
-  padding: 60px 0;
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 1px solid #e5e5e5;
+  gap: 60px;
+  padding: 32px 0;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--home-line);
+  margin-bottom: 32px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .stat-item {
   text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-4px);
 }
 
 .stat-number {
-  font-size: 56px;
-  font-weight: 600;
-  color: #0a0a0a;
-  letter-spacing: -0.03em;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--home-accent);
+  letter-spacing: -0.02em;
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .stat-label {
   font-size: 13px;
-  color: #737373;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  color: var(--home-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 /* Categories Section */
 .categories-section {
-  padding: 80px 0 40px;
+  padding: 50px 0 40px;
 }
 
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .category-card {
-  padding: 32px 24px;
-  background: #fafafa;
-  border: 1px solid transparent;
-  border-radius: 4px;
+  padding: 24px 20px;
+  background: #fff;
+  border: 1px solid var(--home-line);
+  border-radius: 14px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .category-card:hover {
   background: #fff;
-  border-color: #e5e5e5;
-  transform: translateY(-2px);
+  border-color: var(--home-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
 }
 
 .category-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .category-icon-el {
-  color: var(--el-color-primary, #409eff);
+  color: var(--home-accent);
 }
 
 .category-name {
   font-size: 14px;
-  font-weight: 500;
-  color: #0a0a0a;
+  font-weight: 600;
+  color: var(--home-ink);
 }
 
 /* Books Section */
@@ -406,25 +485,46 @@ onMounted(async () => {
   padding: 40px 0;
 }
 
-.section-header {
-  display: flex;
+.books-section .section-header {
+  flex-direction: row;
   justify-content: space-between;
+  text-align: left;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
-.section-title {
-  font-size: 32px;
-  font-weight: 600;
-  color: #0a0a0a;
-  letter-spacing: -0.02em;
+.books-section .section-title {
   margin: 0;
 }
 
+.section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--home-ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: var(--home-muted);
+  margin: 0;
+  font-weight: 500;
+}
+
 .view-all {
-  color: #737373;
+  color: var(--home-muted);
   text-decoration: none;
   font-size: 14px;
+  font-weight: 600;
   transition: color 0.2s;
   display: flex;
   align-items: center;
@@ -432,7 +532,22 @@ onMounted(async () => {
 }
 
 .view-all:hover {
-  color: #0a0a0a;
+  color: var(--home-accent);
+}
+
+.view-all {
+  color: var(--home-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-all:hover {
+  color: var(--home-accent);
 }
 
 .books-grid {
@@ -444,32 +559,39 @@ onMounted(async () => {
 /* Book Card */
 .book-card {
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .book-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
 }
 
 .book-card:active {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
 }
 
 .book-image {
   position: relative;
   aspect-ratio: 3/4;
-  background: #fafafa;
-  border-radius: 4px;
+  background: var(--home-bg);
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 12px;
-  border: 1px solid #e5e5e5;
+  margin-bottom: 14px;
+  border: 1px solid var(--home-line);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-card:hover .book-image {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 
 .book-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .book-card:hover .book-image img {
@@ -479,20 +601,20 @@ onMounted(async () => {
 .sold-badge,
 .limited-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 10px;
-  background: rgba(0, 0, 0, 0.85);
+  top: 10px;
+  right: 10px;
+  padding: 5px 12px;
+  background: rgba(15, 23, 42, 0.9);
   color: #fff;
   font-size: 11px;
-  font-weight: 500;
-  border-radius: 2px;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
   backdrop-filter: blur(10px);
 }
 
 .limited-badge {
-  background: rgba(220, 38, 38, 0.9);
+  background: rgba(239, 68, 68, 0.95);
 }
 
 .book-info {
@@ -501,8 +623,8 @@ onMounted(async () => {
 
 .book-title {
   font-size: 15px;
-  font-weight: 500;
-  color: #0a0a0a;
+  font-weight: 600;
+  color: var(--home-ink);
   margin: 0 0 6px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -512,7 +634,7 @@ onMounted(async () => {
 
 .book-author {
   font-size: 13px;
-  color: #737373;
+  color: var(--home-muted);
   margin: 0 0 12px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -525,22 +647,10 @@ onMounted(async () => {
   align-items: center;
 }
 
-.book-price {
-  font-size: 20px;
-  font-weight: 600;
-  color: #0a0a0a;
-  letter-spacing: -0.01em;
-}
-
-.book-condition {
-  font-size: 12px;
-  color: #a3a3a3;
-}
-
-/* Features Section — Element Plus 风格 */
+/* Features Section */
 .features-section {
-  padding: 64px 0 0;
-  border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
+  padding: 60px 0 0;
+  border-top: 1px solid var(--home-line);
 }
 
 .features-row {
@@ -550,43 +660,45 @@ onMounted(async () => {
 
 .feature-card {
   height: 100%;
-  border: 1px solid var(--el-border-color-lighter, #ebeef5);
-  border-radius: var(--el-border-radius-base, 4px);
-  background: var(--el-fill-color-blank, #fff);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--home-line);
+  border-radius: 14px;
+  background: #fff;
+  transition: all 0.3s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .feature-card:hover {
-  border-color: var(--el-border-color, #dcdfe6);
-  box-shadow: var(--el-box-shadow-light, 0 0 12px rgba(0, 0, 0, 0.06));
+  border-color: var(--home-accent);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+  transform: translateY(-4px);
 }
 
 .feature-card :deep(.el-card__body) {
-  padding: 24px 20px;
+  padding: 28px 24px;
   text-align: center;
 }
 
 .feature-icon-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .feature-icon-el {
-  color: var(--el-color-primary, #409eff);
+  color: var(--home-accent);
 }
 
 .feature-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--el-text-color-primary, #303133);
+  color: var(--home-ink);
   margin: 0 0 8px;
   line-height: 1.4;
 }
 
 .feature-desc {
   font-size: 13px;
-  color: var(--el-text-color-secondary, #909399);
+  color: var(--home-muted);
   margin: 0;
   line-height: 1.6;
 }
@@ -598,9 +710,10 @@ onMounted(async () => {
 
 .skeleton-image {
   aspect-ratio: 3/4;
-  background: #f5f5f5;
-  border-radius: 4px;
-  margin-bottom: 12px;
+  background: var(--home-bg);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  border: 1px solid var(--home-line);
 }
 
 .skeleton-content {
@@ -609,8 +722,8 @@ onMounted(async () => {
 
 .skeleton-text {
   height: 14px;
-  background: #f5f5f5;
-  border-radius: 2px;
+  background: var(--home-bg);
+  border-radius: 4px;
   margin-bottom: 8px;
 }
 
@@ -624,7 +737,7 @@ onMounted(async () => {
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.5; }
 }
 
 /* Responsive */
@@ -634,34 +747,70 @@ onMounted(async () => {
   }
 
   .hero {
-    padding: 40px 0 32px;
+    padding: 60px 16px 40px;
+    margin: -16px -16px 0;
+  }
+
+  .hero-content {
+    padding: 0 16px;
+  }
+
+  .hero-title {
+    font-size: 26px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    margin-bottom: 24px;
   }
 
   .hero-search {
     flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-input,
+  .search-btn {
+    height: 48px;
+    font-size: 14px;
   }
 
   .search-btn {
-    width: 100%;
+    padding: 0 24px;
     justify-content: center;
+  }
+
+  /* 移动端响应式 */
+  .minimal-home {
+    padding: 0 16px 60px;
+  }
+
+  .quick-categories-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .stats {
     gap: 40px;
     flex-wrap: wrap;
+    padding: 30px 20px;
+    margin: 0 0 20px;
   }
 
   .stat-number {
-    font-size: 40px;
+    font-size: 36px;
   }
 
   .categories-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 12px;
   }
 
   .category-card {
-    padding: 24px 16px;
+    padding: 20px 16px;
+  }
+
+  .category-icon-el {
+    font-size: 24px !important;
   }
 
   .books-grid {
@@ -670,7 +819,7 @@ onMounted(async () => {
   }
 
   .section-title {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .features-section {

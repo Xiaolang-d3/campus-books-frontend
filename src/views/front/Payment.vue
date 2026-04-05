@@ -82,13 +82,19 @@
       </div>
 
       <el-alert
-        v-if="balance < orderInfo.total_amount"
+        v-if="Number(balance) < Number(orderInfo.total_amount)"
         title="余额不足，无法支付"
         type="error"
         show-icon
         :closable="false"
         style="margin-top: 16px"
-      />
+      >
+        <template #default>
+          <div>当前余额：¥{{ Number(balance).toFixed(2) }}</div>
+          <div>需要支付：¥{{ Number(orderInfo.total_amount || 0).toFixed(2) }}</div>
+          <div>还需充值：¥{{ (Number(orderInfo.total_amount || 0) - Number(balance)).toFixed(2) }}</div>
+        </template>
+      </el-alert>
 
       <div class="payment-actions">
         <el-button size="large" @click="$router.back()">取消</el-button>
@@ -97,9 +103,9 @@
           size="large"
           @click="handlePay"
           :loading="paying"
-          :disabled="balance < orderInfo.total_amount"
+          :disabled="Number(balance) < Number(orderInfo.total_amount)"
         >
-          确认支付 ¥{{ orderInfo.total_amount }}
+          确认支付 ¥{{ Number(orderInfo.total_amount || 0).toFixed(2) }}
         </el-button>
       </div>
     </el-card>
@@ -126,6 +132,9 @@ const loadOrder = async () => {
   try {
     const res = await http.get(`/order/info/${route.params.id}`)
     orderInfo.value = res.data?.data || {}
+    
+    // 确保 total_amount 是数字类型
+    orderInfo.value.total_amount = Number(orderInfo.value.total_amount || 0)
 
     if (orderInfo.value.status !== '未支付') {
       ElMessage.warning('订单状态异常')
@@ -142,21 +151,49 @@ const loadOrder = async () => {
 const loadBalance = async () => {
   try {
     const res = await http.get('/wallet/balance')
-    balance.value = res.data?.data?.balance || 0
+    console.log('余额API响应:', res.data)
+    
+    if (res.data?.code === 500 && res.data?.msg?.includes('仅校园用户支持钱包功能')) {
+      ElMessage.error('登录信息已过期，请重新登录')
+      setTimeout(() => {
+        localStorage.clear()
+        router.push('/login')
+      }, 2000)
+      return
+    }
+    
+    // 确保 balance 是数字类型
+    balance.value = Number(res.data?.data?.balance || 0)
+    console.log('当前余额:', balance.value, '订单金额:', orderInfo.value.total_amount)
   } catch (e) {
-    console.error(e)
+    console.error('获取余额失败:', e)
+    console.error('错误详情:', e.response?.data)
+    
+    if (e.response?.data?.msg?.includes('仅校园用户支持钱包功能')) {
+      ElMessage.error('登录信息已过期，请重新登录')
+      setTimeout(() => {
+        localStorage.clear()
+        router.push('/login')
+      }, 2000)
+    }
+    balance.value = 0
   }
 }
 
 const handlePay = async () => {
-  if (balance.value < orderInfo.value.total_amount) {
-    ElMessage.warning('余额不足，无法支付')
+  const orderAmount = Number(orderInfo.value.total_amount || 0)
+  const currentBalance = Number(balance.value || 0)
+  
+  console.log('支付检查 - 余额:', currentBalance, '订单金额:', orderAmount)
+  
+  if (currentBalance < orderAmount) {
+    ElMessage.warning(`余额不足，无法支付。当前余额：¥${currentBalance.toFixed(2)}，需要：¥${orderAmount.toFixed(2)}`)
     return
   }
 
   try {
     await ElMessageBox.confirm(
-      `确认支付 ¥${orderInfo.value.total_amount} 吗？`,
+      `确认支付 ¥${orderAmount.toFixed(2)} 吗？`,
       '确认支付',
       {
         confirmButtonText: '确认',
@@ -183,9 +220,9 @@ const handlePay = async () => {
   }
 }
 
-onMounted(() => {
-  loadOrder()
-  loadBalance()
+onMounted(async () => {
+  await loadOrder()  // 先加载订单
+  await loadBalance() // 再加载余额，这样可以正确比较
 })
 </script>
 

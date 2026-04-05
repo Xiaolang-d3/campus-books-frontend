@@ -2,19 +2,29 @@
   <div>
     <el-card>
       <el-form :inline="true" :model="searchForm">
-        <el-form-item label="用户名"><el-input v-model="searchForm.nickname" placeholder="请输入" clearable /></el-form-item>
+        <el-form-item label="评论内容"><el-input v-model="searchForm.content" placeholder="请输入评论内容" clearable /></el-form-item>
         <el-form-item>
           <el-button type="primary" @click="loadData">查询</el-button>
-          <el-button @click="searchForm.nickname = ''; loadData()">重置</el-button>
+          <el-button @click="searchForm.content = ''; loadData()">重置</el-button>
           <el-button type="danger" @click="handleBatchDelete">批量删除</el-button>
         </el-form-item>
       </el-form>
       <el-table :data="tableData" @selection-change="sel => selectedIds = sel.map(r=>r.id)" border stripe>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="nickname" label="用户名" />
-        <el-table-column prop="content" label="评论内容" show-overflow-tooltip />
-        <el-table-column prop="reply" label="回复内容" show-overflow-tooltip />
-        <el-table-column prop="addtime" label="评论时间" width="180" />
+        <el-table-column prop="user_name" label="用户名" min-width="120" />
+        <el-table-column prop="book_title" label="书籍名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="rating" label="评分" width="100">
+          <template #default="{ row }">
+            <el-rate v-model="row.rating" disabled show-score text-color="#ff9900" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="content" label="评论内容" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="addtime" label="评论时间" width="180">
+          <template #default="{ row }">
+            {{ row.addtime ? new Date(row.addtime).toLocaleString('zh-CN') : '' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="openReply(row)">回复</el-button>
@@ -44,7 +54,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import http from '@/utils/http'
 
-const searchForm = reactive({ nickname: '' })
+const searchForm = reactive({ content: '' })
 const tableData = ref([]); const page = ref(1); const limit = ref(10); const total = ref(0)
 const dialogVisible = ref(false); const form = ref({}); const selectedIds = ref([])
 
