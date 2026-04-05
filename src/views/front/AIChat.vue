@@ -9,7 +9,7 @@
 
         <div class="ai-info">
           <div class="ai-avatar">
-            <el-icon :size="20"><MagicStick /></el-icon>
+            <el-icon :size="22"><ChatDotRound /></el-icon>
           </div>
           <div class="ai-meta">
             <div class="ai-title-row">
@@ -25,16 +25,14 @@
       </div>
 
       <div class="header-actions">
-        <div class="session-stat">
-          <span class="stat-label">本次对话</span>
-          <strong>{{ assistantReplyCount }}</strong>
-        </div>
-        <el-tooltip content="清空对话" placement="bottom">
-          <el-button text @click="confirmClear" class="action-btn" :disabled="messages.length === 0">
-            <el-icon><Delete /></el-icon>
-            <span>清空</span>
-          </el-button>
-        </el-tooltip>
+        <el-button text @click="showSessions = true" class="action-btn">
+          <el-icon><ChatLineRound /></el-icon>
+          <span>历史</span>
+        </el-button>
+        <el-button text @click="createNewSession" class="action-btn">
+          <el-icon><Plus /></el-icon>
+          <span>新对话</span>
+        </el-button>
       </div>
     </div>
 
@@ -43,7 +41,7 @@
       <!-- 欢迎消息 -->
       <div v-if="messages.length === 0" class="welcome-section">
         <div class="welcome-icon">
-          <el-icon :size="48"><MagicStick /></el-icon>
+          <el-icon :size="52"><ChatDotRound /></el-icon>
           <div class="icon-pulse"></div>
         </div>
 
@@ -53,31 +51,10 @@
           也能根据专业和课程方向给出选书建议。
         </p>
 
-        <div class="intro-panel">
-          <div class="intro-chip">
-            <el-icon><Reading /></el-icon>
-            <span>找专业教材</span>
-          </div>
-          <div class="intro-chip">
-            <el-icon><ShoppingCart /></el-icon>
-            <span>了解交易流程</span>
-          </div>
-          <div class="intro-chip">
-            <el-icon><Upload /></el-icon>
-            <span>快速发布闲置</span>
-          </div>
-          <div class="intro-chip">
-            <el-icon><Collection /></el-icon>
-            <span>按专业推荐书单</span>
-          </div>
-        </div>
-
         <!-- 功能卡片 -->
         <div class="feature-cards">
           <div class="feature-card" @click="sendQuickQuestion('有什么算法书推荐吗？')">
-            <div class="card-icon">
-              <el-icon><Reading /></el-icon>
-            </div>
+            <div class="card-icon"><el-icon><Reading /></el-icon></div>
             <div class="card-text">
               <span class="card-title">书籍推荐</span>
               <span class="card-desc">根据课程、方向和预算推荐合适书籍</span>
@@ -85,9 +62,7 @@
           </div>
 
           <div class="feature-card" @click="sendQuickQuestion('如何发布一本书？')">
-            <div class="card-icon">
-              <el-icon><Upload /></el-icon>
-            </div>
+            <div class="card-icon"><el-icon><Upload /></el-icon></div>
             <div class="card-text">
               <span class="card-title">发布指导</span>
               <span class="card-desc">快速了解上架步骤、图片与描述要点</span>
@@ -95,9 +70,7 @@
           </div>
 
           <div class="feature-card" @click="sendQuickQuestion('购买流程是怎样的？')">
-            <div class="card-icon">
-              <el-icon><ShoppingCart /></el-icon>
-            </div>
+            <div class="card-icon"><el-icon><ShoppingCart /></el-icon></div>
             <div class="card-text">
               <span class="card-title">购书指南</span>
               <span class="card-desc">从下单到支付、发货到收货一目了然</span>
@@ -105,50 +78,26 @@
           </div>
 
           <div class="feature-card" @click="sendQuickQuestion('计算机专业大一用什么教材？')">
-            <div class="card-icon">
-              <el-icon><Collection /></el-icon>
-            </div>
+            <div class="card-icon"><el-icon><Collection /></el-icon></div>
             <div class="card-text">
               <span class="card-title">教材咨询</span>
               <span class="card-desc">按专业、年级和课程推荐常见教材</span>
             </div>
           </div>
         </div>
-
-        <!-- 快捷问题 -->
-        <div class="quick-questions">
-          <p class="quick-label">可以直接点击这些问题开始：</p>
-          <div class="quick-btns">
-            <el-button
-              v-for="q in quickQuestions"
-              :key="q"
-              class="quick-btn"
-              @click="sendQuickQuestion(q)"
-              :loading="sending"
-            >
-              {{ q }}
-            </el-button>
-          </div>
-        </div>
       </div>
 
       <!-- 消息列表 -->
       <div v-else class="messages-list">
-        <div class="conversation-tip">
-          对话已自动保存在当前会话中，刷新前可继续查看最近记录。
-        </div>
-
         <div
           v-for="(msg, index) in messages"
           :key="index"
           :class="['message-item', msg.role]"
         >
-          <!-- AI 头像 -->
+          <!-- 头像 -->
           <div v-if="msg.role === 'assistant'" class="message-avatar ai-avatar">
-            <el-icon :size="16"><MagicStick /></el-icon>
+            <el-icon :size="18"><ChatDotRound /></el-icon>
           </div>
-
-          <!-- 用户头像 -->
           <div v-else class="message-avatar user-avatar">
             <el-icon :size="16"><User /></el-icon>
           </div>
@@ -160,10 +109,43 @@
               <span v-if="msg.time" class="message-time-inline">{{ msg.time }}</span>
             </div>
 
-            <div class="message-bubble">
+            <!-- 文本消息 -->
+            <div v-if="!msg.content_type || msg.content_type === 'text'" class="message-bubble">
               <div class="message-content" v-if="msg.role === 'user'">{{ msg.content }}</div>
               <div class="message-content" v-else v-html="formatMessage(msg.content)"></div>
               <span v-if="msg.role === 'assistant' && msg.typing" class="typing-cursor">|</span>
+            </div>
+
+            <!-- 书籍卡片列表 -->
+            <div v-else-if="msg.content_type === 'book_list' && msg.metadata?.books" class="book-cards-container">
+              <div class="message-bubble text-intro">
+                <div class="message-content" v-html="formatMessage(msg.content)"></div>
+              </div>
+              <div class="book-cards">
+                <div v-for="book in msg.metadata.books" :key="book.id" class="book-card">
+                  <img :src="getImg(book.cover)" class="book-cover" @click="viewBook(book.id)" />
+                  <div class="book-info">
+                    <h4 class="book-title" @click="viewBook(book.id)">{{ book.title }}</h4>
+                    <p class="book-author">{{ book.author }}</p>
+                    <div class="book-meta">
+                      <span v-if="book.condition" class="book-condition">{{ book.condition }}</span>
+                      <span class="book-stock">库存: {{ book.stock }}</span>
+                    </div>
+                    <div class="book-price-row">
+                      <span class="book-price">¥{{ book.price.toFixed(2) }}</span>
+                      <span v-if="book.original_price > book.price" class="book-original-price">
+                        ¥{{ book.original_price.toFixed(2) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="book-actions">
+                    <el-button size="small" @click="viewBook(book.id)">查看详情</el-button>
+                    <el-button size="small" type="primary" @click="addToCart(book.id)" :disabled="book.stock <= 0">
+                      {{ book.stock > 0 ? '加入购物车' : '已售罄' }}
+                    </el-button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="message-actions">
@@ -173,15 +155,13 @@
                 </button>
               </el-tooltip>
             </div>
-
-            <div class="message-time" v-if="msg.time">{{ msg.time }}</div>
           </div>
         </div>
 
         <!-- AI 思考中 -->
         <div v-if="sending" class="message-item assistant">
           <div class="message-avatar ai-avatar">
-            <el-icon :size="16"><MagicStick /></el-icon>
+            <el-icon :size="18"><ChatDotRound /></el-icon>
           </div>
           <div class="message-bubble-wrapper">
             <div class="message-meta">
@@ -198,32 +178,26 @@
       </div>
     </div>
 
+    <!-- 快捷功能栏 -->
+    <div v-if="messages.length > 0" class="quick-actions-bar">
+      <el-button
+        v-for="action in quickActions"
+        :key="action.id"
+        size="small"
+        class="quick-action-btn"
+        @click="sendQuickQuestion(action.prompt)"
+        :disabled="sending"
+      >
+        <el-icon><component :is="action.icon" /></el-icon>
+        <span>{{ action.label }}</span>
+      </el-button>
+    </div>
+
     <!-- 输入区域 -->
     <div class="chat-input-area">
       <div v-if="!isLoggedIn()" class="login-notice">
         <span>登录后可与小书继续对话，并获得更精准的校园二手书推荐。</span>
         <el-button type="primary" link @click="goLogin">立即登录</el-button>
-      </div>
-
-      <div class="input-topbar">
-        <div class="quick-hints" v-if="!inputMessage.trim()">
-          <span class="hint-label">快捷提问：</span>
-          <span
-            v-for="hint in quickHints"
-            :key="hint"
-            class="hint-tag"
-            @click="inputMessage = hint"
-          >
-            {{ hint }}
-          </span>
-        </div>
-
-        <div class="input-meta">
-          <span class="enter-tip">Enter 发送 · Shift + Enter 换行</span>
-          <span class="char-count" :class="{ warning: inputLength > 400 }">
-            {{ inputLength }}/500
-          </span>
-        </div>
       </div>
 
       <div class="input-wrapper">
@@ -234,10 +208,8 @@
             :rows="1"
             :autosize="{ minRows: 1, maxRows: 4 }"
             maxlength="500"
-            show-word-limit="false"
             placeholder="请输入你的问题，例如：计算机专业大一适合买哪些教材？"
             @keydown.enter.exact.prevent="handleSend"
-            @input="autoResize"
             ref="inputRef"
             :disabled="sending"
             class="chat-input"
@@ -249,14 +221,43 @@
           @click="handleSend"
           :disabled="!inputMessage.trim() || sending"
           class="send-btn"
-          :class="{ sending: sending }"
         >
-          <el-icon v-if="!sending" class="send-icon"><Promotion /></el-icon>
-          <span v-if="!sending">发送</span>
+          <el-icon v-if="!sending"><Promotion /></el-icon>
           <el-icon v-else class="loading-icon"><Loading /></el-icon>
         </el-button>
       </div>
     </div>
+
+    <!-- 历史会话侧边栏 -->
+    <el-drawer v-model="showSessions" title="历史对话" size="360px">
+      <div class="sessions-list">
+        <div
+          v-for="session in sessions"
+          :key="session.id"
+          class="session-item"
+          :class="{ active: currentSessionId === session.id }"
+          @click="loadSession(session.id)"
+        >
+          <div class="session-info">
+            <h4 class="session-title">{{ session.title }}</h4>
+            <p class="session-preview">{{ session.preview }}</p>
+            <span class="session-time">{{ formatSessionTime(session.last_message_time) }}</span>
+          </div>
+          <el-button
+            text
+            type="danger"
+            size="small"
+            @click.stop="deleteSession(session.id)"
+            class="session-delete"
+          >
+            <el-icon><Delete /></el-icon>
+          </el-button>
+        </div>
+        <div v-if="sessions.length === 0" class="empty-sessions">
+          <el-empty description="暂无历史对话" :image-size="80" />
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -275,7 +276,10 @@ import {
   Reading,
   Upload,
   ShoppingCart,
-  Collection
+  Collection,
+  ChatLineRound,
+  Plus,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
@@ -286,42 +290,18 @@ const inputMessage = ref('')
 const sending = ref(false)
 const messagesContainer = ref(null)
 const inputRef = ref(null)
+const currentSessionId = ref(null)
+const sessions = ref([])
+const showSessions = ref(false)
 
-const quickQuestions = [
-  '有什么算法书推荐吗？',
-  '计算机专业大一用什么教材？',
-  '如何发布一本书？',
-  '购买流程是怎样的？'
+const quickActions = [
+  { id: 'find-book', label: '找书', icon: 'Reading', prompt: '推荐几本书' },
+  { id: 'sell-book', label: '发布', icon: 'Upload', prompt: '如何发布一本书？' },
+  { id: 'buy-guide', label: '购买', icon: 'ShoppingCart', prompt: '购买流程是怎样的？' },
+  { id: 'recommend', label: '推荐', icon: 'Collection', prompt: '推荐一些教材' }
 ]
 
-const quickHints = [
-  '推荐几本 Python 书籍',
-  '二手书购买注意事项',
-  '如何联系卖家'
-]
-
-const inputLength = computed(() => inputMessage.value.length)
-const assistantReplyCount = computed(() => messages.value.filter(m => m.role === 'assistant').length)
-
-// 格式化时间
-const formatTime = () => {
-  const now = new Date()
-  const hours = now.getHours().toString().padStart(2, '0')
-  const minutes = now.getMinutes().toString().padStart(2, '0')
-  return `${hours}:${minutes}`
-}
-
-// 加载历史记录（从 sessionStorage）
-const loadHistory = () => {
-  try {
-    const history = sessionStorage.getItem('ai_chat_history')
-    if (history) {
-      messages.value = JSON.parse(history)
-    }
-  } catch (e) {
-    console.error('加载历史记录失败', e)
-  }
-}
+const getImg = (v) => v ? (v.startsWith('http') ? v : `/api/file/download/${v}`) : '/placeholder-book.png'
 
 const isLoggedIn = () => Boolean(localStorage.getItem('token'))
 
@@ -329,26 +309,104 @@ const goLogin = () => {
   router.push('/login')
 }
 
-const appendAssistantMessage = async (content) => {
-  messages.value.push({ role: 'assistant', content: '', typing: true })
-  await scrollToBottom()
-  await typewriterEffect(messages.value.length - 1, content)
-  messages.value[messages.value.length - 1].time = formatTime()
-  saveHistory()
+// 加载会话列表
+const loadSessions = async () => {
+  try {
+    const res = await http.get('/chat/sessions')
+    sessions.value = res.data?.data?.sessions || []
+  } catch (e) {
+    console.error('加载会话列表失败', e)
+  }
 }
 
-// 保存历史记录
-const saveHistory = () => {
+// 加载会话消息
+const loadSession = async (sessionId) => {
   try {
-    const toSave = messages.value.slice(-30).map(m => ({
+    const res = await http.get(`/chat/session/${sessionId}`)
+    const sessionMessages = res.data?.data?.messages || []
+    
+    messages.value = sessionMessages.map(m => ({
       role: m.role,
       content: m.content,
-      time: m.time
+      content_type: m.content_type,
+      metadata: m.metadata,
+      time: formatTime(m.addtime)
     }))
-    sessionStorage.setItem('ai_chat_history', JSON.stringify(toSave))
+    
+    currentSessionId.value = sessionId
+    showSessions.value = false
+    await scrollToBottom()
   } catch (e) {
-    console.error('保存历史记录失败', e)
+    ElMessage.error('加载会话失败')
+    console.error(e)
   }
+}
+
+// 创建新会话
+const createNewSession = async () => {
+  try {
+    const res = await http.post('/chat/session/new')
+    const newSession = res.data?.data?.session
+    if (newSession) {
+      currentSessionId.value = newSession.id
+      messages.value = []
+      await loadSessions()
+      ElMessage.success('已创建新对话')
+    }
+  } catch (e) {
+    ElMessage.error('创建新对话失败')
+    console.error(e)
+  }
+}
+
+// 删除会话
+const deleteSession = async (sessionId) => {
+  try {
+    await ElMessageBox.confirm('确定删除这个对话吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await http.delete(`/chat/session/${sessionId}`)
+    
+    if (currentSessionId.value === sessionId) {
+      currentSessionId.value = null
+      messages.value = []
+    }
+    
+    await loadSessions()
+    ElMessage.success('对话已删除')
+  } catch (e) {
+    if (e !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+// 格式化时间
+const formatTime = (datetime) => {
+  if (!datetime) return ''
+  const date = new Date(datetime)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+// 格式化会话时间
+const formatSessionTime = (datetime) => {
+  if (!datetime) return ''
+  const date = new Date(datetime)
+  const now = new Date()
+  const diff = now - date
+  
+  if (diff < 60000) return '刚刚'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+  
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${month}-${day}`
 }
 
 // 发送消息
@@ -369,31 +427,37 @@ const handleSend = async () => {
   messages.value.push({
     role: 'user',
     content,
-    time: formatTime()
+    time: formatTime(new Date())
   })
-  saveHistory()
   await scrollToBottom()
 
   sending.value = true
 
   try {
-    const history = messages.value
-      .filter(m => m.role !== 'system')
-      .slice(0, -1)
-      .map(m => ({ role: m.role, content: m.content }))
-
     const res = await http.post('/chat/send', {
       message: content,
-      history
+      session_id: currentSessionId.value
     })
 
     if (res.data?.code === 0) {
-      const reply = res.data?.data?.reply?.trim()
-      await appendAssistantMessage(reply || '抱歉，我暂时没有组织好回答，请换个问法再试试。')
+      const data = res.data.data
+      currentSessionId.value = data.session_id
+      
+      await appendAssistantMessage({
+        content: data.reply || '抱歉，我暂时没有组织好回答。',
+        content_type: data.content_type,
+        metadata: data.metadata
+      })
+      
+      // 刷新会话列表
+      await loadSessions()
     } else {
       const message = res.data?.msg || '发送失败，请稍后重试'
       ElMessage.error(message)
-      await appendAssistantMessage(`抱歉，当前无法完成回答：${message}`)
+      await appendAssistantMessage({
+        content: `抱歉，当前无法完成回答：${message}`,
+        content_type: 'text'
+      })
     }
   } catch (e) {
     console.error('发送消息失败', e)
@@ -403,26 +467,42 @@ const handleSend = async () => {
         ? '登录状态已失效，请重新登录后再试'
         : (e.response?.data?.msg || '网络异常，请稍后重试')
     ElMessage.error(message)
-    await appendAssistantMessage(`抱歉，当前无法完成回答：${message}`)
+    await appendAssistantMessage({
+      content: `抱歉，当前无法完成回答：${message}`,
+      content_type: 'text'
+    })
   } finally {
     sending.value = false
-    saveHistory()
     await nextTick()
     inputRef.value?.focus()
   }
 }
 
-// 打字机效果
-const typewriterEffect = async (index, text) => {
-  const message = messages.value[index]
+// 添加AI消息（带打字机效果）
+const appendAssistantMessage = async (msgData) => {
+  const msg = {
+    role: 'assistant',
+    content: '',
+    content_type: msgData.content_type || 'text',
+    metadata: msgData.metadata,
+    typing: true
+  }
+  
+  messages.value.push(msg)
+  await scrollToBottom()
+  
+  // 打字机效果
+  const text = msgData.content
   for (let i = 0; i < text.length; i++) {
-    message.content += text[i]
+    msg.content += text[i]
     if (i % 5 === 0) {
       await scrollToBottom()
     }
-    await sleep(25)
+    await sleep(20)
   }
-  message.typing = false
+  
+  msg.typing = false
+  msg.time = formatTime(new Date())
   await scrollToBottom()
 }
 
@@ -439,38 +519,11 @@ const scrollToBottom = async () => {
   }
 }
 
-// 自动调整输入框高度
-const autoResize = () => {
-  nextTick(() => {
-    if (inputRef.value) {
-      inputRef.value.resizeTextarea()
-    }
-  })
-}
-
 // 发送快捷问题
 const sendQuickQuestion = async (question) => {
   inputMessage.value = question
   await nextTick()
   handleSend()
-}
-
-// 确认清空对话
-const confirmClear = () => {
-  ElMessageBox.confirm('确定要清空所有对话记录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    clearChat()
-  }).catch(() => {})
-}
-
-// 清空对话
-const clearChat = () => {
-  messages.value = []
-  sessionStorage.removeItem('ai_chat_history')
-  ElMessage.success('对话已清空')
 }
 
 // 复制消息
@@ -483,17 +536,16 @@ const copyMessage = async (content) => {
   }
 }
 
-// 基础 HTML 转义，避免直接注入原始标签
-const escapeHtml = (text) => {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-}
-
-// 格式化消息（支持简单 Markdown 风格）
+// 格式化消息（支持简单 Markdown）
 const formatMessage = (content) => {
   if (!content) return ''
+  const escapeHtml = (text) => {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+  }
+  
   return escapeHtml(content)
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -502,8 +554,32 @@ const formatMessage = (content) => {
     .replace(/(<li>[\s\S]*<\/li>)/, '<ul>$1</ul>')
 }
 
-onMounted(() => {
-  loadHistory()
+// 查看书籍详情
+const viewBook = (bookId) => {
+  router.push(`/front/book/${bookId}`)
+}
+
+// 加入购物车
+const addToCart = async (bookId) => {
+  try {
+    await http.post('/cart/add', {
+      book_id: bookId,
+      quantity: 1
+    })
+    ElMessage.success('已加入购物车')
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || '加入购物车失败')
+  }
+}
+
+onMounted(async () => {
+  if (isLoggedIn()) {
+    await loadSessions()
+    // 如果有会话，加载最近的一个
+    if (sessions.value.length > 0) {
+      await loadSession(sessions.value[0].id)
+    }
+  }
   nextTick(() => {
     inputRef.value?.focus()
     scrollToBottom()
@@ -517,15 +593,12 @@ onMounted(() => {
   flex-direction: column;
   min-height: calc(100vh - 64px - 20px);
   height: calc(100vh - 64px - 20px);
-  max-width: 920px;
+  max-width: 1000px;
   margin: 0 auto;
-  background:
-    radial-gradient(circle at top left, rgba(102, 126, 234, 0.12), transparent 28%),
-    linear-gradient(180deg, #f8f9fc 0%, #eef1f7 100%);
-  border-radius: 20px;
+  background: #fafaf9;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 18px 48px rgba(80, 102, 180, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 /* 标题栏 */
@@ -533,55 +606,53 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid #ebeef5;
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e7e5e4;
   flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 16px;
 }
 
 .back-btn {
-  font-size: 18px;
-  padding: 6px;
-  color: #606266;
+  font-size: 20px;
+  padding: 8px;
+  color: #78716c;
   transition: all 0.2s;
 }
 
 .back-btn:hover {
-  color: #667eea;
-  background: #f0f2ff;
+  color: #ea580c;
+  background: #fff7ed;
+  border-radius: 8px;
 }
 
 .ai-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 0;
 }
 
 .ai-avatar {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   color: #fff;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.28);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
 }
 
 .ai-meta {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 2px;
 }
 
 .ai-title-row {
@@ -591,36 +662,34 @@ onMounted(() => {
 }
 
 .ai-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #303133;
+  color: #1c1917;
+  letter-spacing: -0.01em;
 }
 
 .ai-badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #667eea;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #ea580c;
   font-size: 11px;
   font-weight: 600;
+  border: 1px solid #fed7aa;
 }
 
 .ai-status {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: #67c23a;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 6px;
+  font-size: 12px;
+  color: #78716c;
 }
 
 .status-dot {
   width: 6px;
   height: 6px;
-  background: #67c23a;
+  background: #22c55e;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -632,261 +701,170 @@ onMounted(() => {
 
 .header-actions {
   display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.session-stat {
-  min-width: 74px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  background: #f7f8ff;
-  border: 1px solid #e6eafc;
-  text-align: center;
-}
-
-.stat-label {
-  display: block;
-  font-size: 11px;
-  color: #909399;
-  line-height: 1.2;
-}
-
-.session-stat strong {
-  font-size: 16px;
-  color: #303133;
+  gap: 8px;
 }
 
 .action-btn {
-  color: #909399;
+  color: #78716c;
   font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 16px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
   transition: all 0.2s;
+  background: #fafaf9;
+  border: 1px solid #e7e5e4;
 }
 
-.action-btn:hover:not(:disabled) {
-  color: #f56c6c;
-  background: #fef0f0;
-}
-
-.action-btn:disabled {
-  opacity: 0.4;
+.action-btn:hover {
+  background: #fff7ed;
+  color: #ea580c;
+  border-color: #fed7aa;
 }
 
 /* 消息区域 */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 22px;
+  padding: 24px;
   scroll-behavior: smooth;
+  background: #fafaf9;
 }
 
 /* 欢迎界面 */
 .welcome-section {
   text-align: center;
-  padding: 30px 20px 36px;
-  animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  padding: 40px 24px;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
 .welcome-icon {
-  width: 84px;
-  height: 84px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   color: #fff;
-  border-radius: 50%;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 24px;
   position: relative;
-  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.28);
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.25);
 }
 
 .icon-pulse {
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   animation: iconPulse 2s ease-out infinite;
   z-index: -1;
 }
 
 @keyframes iconPulse {
-  0% { transform: scale(1); opacity: 0.35; }
-  100% { transform: scale(1.5); opacity: 0; }
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
 .welcome-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #303133;
-  margin: 0 0 10px;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1c1917;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
 }
 
 .welcome-desc {
-  font-size: 14px;
-  color: #7b8190;
-  margin: 0 auto 22px;
-  line-height: 1.8;
-  max-width: 620px;
-}
-
-.intro-panel {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 auto 28px;
-  max-width: 640px;
-}
-
-.intro-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #e8ebf7;
-  color: #5f6372;
-  font-size: 13px;
-  box-shadow: 0 4px 10px rgba(102, 126, 234, 0.06);
+  font-size: 15px;
+  color: #78716c;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+  max-width: 560px;
 }
 
 /* 功能卡片 */
 .feature-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  max-width: 620px;
-  margin: 0 auto 28px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
 .feature-card {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 16px;
-  border: 1px solid #ebeef5;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid #e7e5e4;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
 }
 
 .feature-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 10px 24px rgba(102, 126, 234, 0.12);
-  transform: translateY(-3px);
+  border-color: #f59e0b;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.12);
+  transform: translateY(-4px);
 }
 
 .card-icon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #f0f2ff 0%, #e8ebfa 100%);
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #667eea;
-  font-size: 18px;
+  color: #ea580c;
+  font-size: 20px;
   flex-shrink: 0;
+  border: 1px solid #fed7aa;
 }
 
 .card-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
+  gap: 6px;
+  flex: 1;
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #303133;
+  color: #1c1917;
+  letter-spacing: -0.01em;
 }
 
 .card-desc {
-  font-size: 12px;
-  color: #909399;
+  font-size: 13px;
+  color: #78716c;
   line-height: 1.5;
-}
-
-/* 快捷问题 */
-.quick-questions {
-  text-align: left;
-  max-width: 620px;
-  margin: 0 auto;
-}
-
-.quick-label {
-  font-size: 13px;
-  color: #909399;
-  margin: 0 0 12px;
-}
-
-.quick-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.quick-btn {
-  padding: 10px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  color: #606266;
-  transition: all 0.2s;
-}
-
-.quick-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  background: #f0f2ff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 /* 消息列表 */
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.conversation-tip {
-  align-self: center;
-  font-size: 12px;
-  color: #8e95a3;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #e8ebf5;
-  border-radius: 999px;
-  padding: 6px 12px;
-  margin-bottom: 6px;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .message-item {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
   animation: slideIn 0.3s ease;
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -895,9 +873,9 @@ onMounted(() => {
 }
 
 .message-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -905,21 +883,22 @@ onMounted(() => {
 }
 
 .message-avatar.ai-avatar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.2);
 }
 
 .message-avatar.user-avatar {
-  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .message-bubble-wrapper {
   display: flex;
   flex-direction: column;
-  max-width: 74%;
+  max-width: 75%;
+  gap: 4px;
 }
 
 .message-item.user .message-bubble-wrapper {
@@ -930,46 +909,40 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 2px 6px;
-}
-
-.message-item.user .message-meta {
-  justify-content: flex-end;
+  padding: 0 4px;
 }
 
 .message-role {
   font-size: 12px;
   font-weight: 600;
-  color: #606266;
+  color: #57534e;
 }
 
-.message-time-inline,
-.thinking-text {
+.message-time-inline {
   font-size: 11px;
-  color: #a0a6b2;
+  color: #a8a29e;
 }
 
 .message-bubble {
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
   font-size: 14px;
-  line-height: 1.75;
+  line-height: 1.7;
   word-break: break-word;
-  position: relative;
 }
 
 .message-item.user .message-bubble {
-  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 
 .message-item.assistant .message-bubble {
-  background: rgba(255, 255, 255, 0.96);
-  color: #303133;
+  background: #fff;
+  color: #1c1917;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e7e5e4;
   border-bottom-left-radius: 4px;
-  box-shadow: 0 8px 20px rgba(34, 44, 88, 0.06);
-  border: 1px solid #edf0f7;
 }
 
 .message-content {
@@ -977,24 +950,147 @@ onMounted(() => {
 }
 
 .message-content :deep(ul) {
-  margin: 8px 0;
+  margin: 10px 0;
   padding-left: 20px;
 }
 
-.message-content :deep(li) {
-  margin: 4px 0;
-}
-
 .message-content :deep(.inline-code) {
-  background: #f0f2ff;
-  color: #667eea;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace;
+  background: #fff7ed;
+  color: #ea580c;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
   font-size: 13px;
+  border: 1px solid #fed7aa;
 }
 
-/* 消息操作按钮 */
+/* 书籍卡片 */
+.book-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.text-intro {
+  background: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e7e5e4;
+}
+
+.book-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.book-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid #e7e5e4;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+}
+
+.book-cover {
+  width: 90px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.book-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.book-title:hover {
+  color: #ea580c;
+}
+
+.book-author {
+  font-size: 13px;
+  color: #78716c;
+  margin: 0;
+}
+
+.book-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.book-condition {
+  padding: 3px 8px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.book-stock {
+  color: #78716c;
+}
+
+.book-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.book-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: #dc2626;
+  letter-spacing: -0.02em;
+}
+
+.book-original-price {
+  font-size: 13px;
+  color: #a8a29e;
+  text-decoration: line-through;
+}
+
+.book-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.book-actions :deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* 消息操作 */
 .message-actions {
   display: flex;
   gap: 4px;
@@ -1017,32 +1113,11 @@ onMounted(() => {
   font-size: 12px;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
 }
 
 .action-icon:hover {
-  background: #f0f2ff;
-  color: #667eea;
-}
-
-/* 时间戳 */
-.message-time {
-  font-size: 11px;
-  color: #c0c4cc;
-  margin-top: 4px;
-}
-
-/* 打字机光标 */
-.typing-cursor {
-  display: inline-block;
-  animation: blink 0.8s infinite;
-  color: #667eea;
-  font-weight: bold;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  background: #fff7ed;
+  color: #ea580c;
 }
 
 /* 思考中动画 */
@@ -1071,12 +1146,57 @@ onMounted(() => {
   40% { transform: scale(1); }
 }
 
+.typing-cursor {
+  display: inline-block;
+  animation: blink 0.8s infinite;
+  color: #ea580c;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* 快捷功能栏 */
+.quick-actions-bar {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  background: #fff;
+  border-top: 1px solid #e7e5e4;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.quick-action-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  color: #ea580c;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  color: #fff;
+  border-color: #ea580c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+}
+
 /* 输入区域 */
 .chat-input-area {
-  padding: 14px 16px 16px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid #ebeef5;
+  padding: 20px 24px;
+  background: #fff;
+  border-top: 1px solid #e7e5e4;
   flex-shrink: 0;
 }
 
@@ -1085,73 +1205,18 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #fff7e6;
-  border: 1px solid #fde3b3;
-  color: #8c6d1f;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  color: #92400e;
   font-size: 13px;
-}
-
-.input-topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.quick-hints {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  animation: fadeIn 0.3s ease;
-}
-
-.hint-label {
-  font-size: 12px;
-  color: #909399;
-  flex-shrink: 0;
-}
-
-.hint-tag {
-  font-size: 12px;
-  color: #667eea;
-  background: #f0f2ff;
-  padding: 4px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.hint-tag:hover {
-  background: #667eea;
-  color: #fff;
-}
-
-.input-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.enter-tip,
-.char-count {
-  font-size: 12px;
-  color: #9aa1af;
-}
-
-.char-count.warning {
-  color: #e6a23c;
-  font-weight: 600;
 }
 
 .input-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-end;
 }
 
@@ -1159,61 +1224,42 @@ onMounted(() => {
   flex: 1;
 }
 
-.chat-input {
-  width: 100%;
-}
-
 .chat-input :deep(.el-textarea__inner) {
-  border-radius: 18px;
-  padding: 12px 16px;
+  border-radius: 12px;
+  padding: 14px 18px;
   resize: none;
   font-size: 14px;
   line-height: 1.6;
+  background: #fafaf9;
+  border: 1.5px solid #e7e5e4;
   transition: all 0.2s;
-  background: #fbfcff;
 }
 
 .chat-input :deep(.el-textarea__inner:focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  border-color: #f59e0b;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
 .send-btn {
-  height: 42px;
-  padding: 0 20px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 46px;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   border: none;
   flex-shrink: 0;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 10px 18px rgba(102, 126, 234, 0.2);
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
 }
 
 .send-btn:hover:not(:disabled) {
-  opacity: 0.94;
-  transform: translateY(-1px);
-  box-shadow: 0 12px 22px rgba(102, 126, 234, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.3);
 }
 
 .send-btn:active:not(:disabled) {
   transform: translateY(0);
-}
-
-.send-btn.sending {
-  background: linear-gradient(135deg, #909399 0%, #a6a9b2 100%);
-  box-shadow: none;
-}
-
-.send-icon {
-  font-size: 16px;
-  transition: transform 0.2s;
-}
-
-.send-btn:hover .send-icon {
-  transform: translateX(2px);
 }
 
 .loading-icon {
@@ -1223,6 +1269,77 @@ onMounted(() => {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* 历史会话 */
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ebeef5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.session-item:hover {
+  background: #f5f7fa;
+  border-color: #f59e0b;
+}
+
+.session-item.active {
+  background: #fff7ed;
+  border-color: #f59e0b;
+}
+
+.session-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-preview {
+  font-size: 12px;
+  color: #909399;
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-time {
+  font-size: 11px;
+  color: #c0c4cc;
+}
+
+.session-delete {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.session-item:hover .session-delete {
+  opacity: 1;
+}
+
+.empty-sessions {
+  padding: 40px 20px;
+  text-align: center;
 }
 
 /* 滚动条 */
@@ -1239,10 +1356,6 @@ onMounted(() => {
   border-radius: 3px;
 }
 
-.chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #c0c4cc;
-}
-
 /* 响应式 */
 @media (max-width: 768px) {
   .ai-chat-page {
@@ -1253,31 +1366,6 @@ onMounted(() => {
     max-width: none;
   }
 
-  .chat-header {
-    padding: 12px 14px;
-  }
-
-  .session-stat {
-    display: none;
-  }
-
-  .welcome-section {
-    padding: 24px 14px 30px;
-  }
-
-  .welcome-icon {
-    width: 68px;
-    height: 68px;
-  }
-
-  .welcome-title {
-    font-size: 22px;
-  }
-
-  .welcome-desc {
-    font-size: 13px;
-  }
-
   .feature-cards {
     grid-template-columns: 1fr;
   }
@@ -1286,31 +1374,25 @@ onMounted(() => {
     max-width: 88%;
   }
 
-  .login-notice {
-    align-items: flex-start;
+  .book-card {
     flex-direction: column;
   }
 
-  .input-topbar {
-    flex-direction: column;
-    align-items: stretch;
+  .book-cover {
+    width: 100%;
+    height: 180px;
   }
 
-  .input-meta {
-    justify-content: space-between;
+  .book-actions {
+    flex-direction: row;
   }
 
-  .quick-hints {
+  .quick-actions-bar {
+    padding: 10px 12px;
+  }
+
+  .action-btn span {
     display: none;
-  }
-
-  .action-btn span,
-  .enter-tip {
-    display: none;
-  }
-
-  .chat-messages {
-    padding: 16px 14px;
   }
 }
 </style>

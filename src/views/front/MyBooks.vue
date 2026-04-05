@@ -117,11 +117,17 @@ const buildDefaultForm = () => ({
 })
 
 const loadData = async () => {
-    const { data: res } = await http.get('/book/page', {
-    params: { ...searchForm, myPublished: 1, page: page.value, limit: 10 },
-  })
-  list.value = res.data?.data?.list || []
-  total.value = res.data?.data?.total || 0
+  try {
+    const uid = localStorage.getItem('userid')
+    const { data: res } = await http.get('/book/list', {
+      params: { ...searchForm, seller_id: uid, page: page.value, limit: 10 },
+    })
+    list.value = res.data?.list || []
+    total.value = res.data?.total || 0
+  } catch (error) {
+    console.error('Error loading books:', error)
+    ElMessage.error('加载数据失败')
+  }
 }
 
 const resetSearch = () => {

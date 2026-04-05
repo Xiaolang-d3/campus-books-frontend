@@ -225,6 +225,7 @@ const handleScroll = () => {
 const navItems = [
   { label: '首页', path: '/front/home' },
   { label: '书籍市场', path: '/front/books' },
+  { label: '发布闲置', path: '/front/publish', auth: true },
   { label: '我的订单', path: '/front/orders', auth: true },
   { label: '我的收藏', path: '/front/storeup', auth: true },
 ]

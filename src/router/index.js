@@ -45,6 +45,7 @@ const routes = [
       { path: 'order-confirm', name: '确认订单', component: () => import('@/views/front/OrderConfirm.vue'), meta: { auth: true } },
       { path: 'payment/:id', name: '订单支付', component: () => import('@/views/front/Payment.vue'), meta: { auth: true } },
       { path: 'orders', name: '我的订单', component: () => import('@/views/front/MyOrders.vue'), meta: { auth: true } },
+      { path: 'publish', name: '发布书籍', component: () => import('@/views/front/PublishBook.vue'), meta: { auth: true } },
       { path: 'my-books', name: '我的发布', component: () => import('@/views/front/MyBooks.vue'), meta: { auth: true } },
       { path: 'wallet', name: '我的钱包', component: () => import('@/views/front/Wallet.vue'), meta: { auth: true } },
       { path: 'address', name: '地址管理', component: () => import('@/views/front/AddressManage.vue'), meta: { auth: true } },
