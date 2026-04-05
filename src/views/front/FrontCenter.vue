@@ -180,30 +180,36 @@ const favoriteCount = ref(0)
 const addressCount = ref(0)
 const myBooksCount = ref(0)
 
-// 生成本地 SVG 头像（不依赖外部API）
-const generateAvatar = (seed, bgColor, fgColor) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="${bgColor}"/><text x="50" y="58" text-anchor="middle" font-size="40" font-family="Arial,sans-serif" font-weight="bold" fill="${fgColor}">${seed}</text></svg>`
+// 生成本地 SVG 头像（渐变背景 + emoji，不依赖外部API）
+const generateAvatar = (emoji, color1, color2) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:${color1}"/><stop offset="100%" style="stop-color:${color2}"/>
+    </linearGradient></defs>
+    <circle cx="50" cy="50" r="50" fill="url(#g)"/>
+    <text x="50" y="62" text-anchor="middle" font-size="42">${emoji}</text>
+  </svg>`
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
 const avatarConfigs = [
-  { initials: 'A', bg: '#4f46e5', fg: '#fff' },
-  { initials: 'B', bg: '#0891b2', fg: '#fff' },
-  { initials: 'C', bg: '#059669', fg: '#fff' },
-  { initials: 'D', bg: '#d97706', fg: '#fff' },
-  { initials: 'E', bg: '#dc2626', fg: '#fff' },
-  { initials: 'F', bg: '#7c3aed', fg: '#fff' },
-  { initials: 'G', bg: '#db2777', fg: '#fff' },
-  { initials: 'H', bg: '#2563eb', fg: '#fff' },
-  { initials: 'J', bg: '#0d9488', fg: '#fff' },
-  { initials: 'K', bg: '#ca8a04', fg: '#fff' },
-  { initials: 'L', bg: '#9333ea', fg: '#fff' },
-  { initials: 'M', bg: '#e11d48', fg: '#fff' },
+  { emoji: '😊', c1: '#667eea', c2: '#764ba2' },
+  { emoji: '😎', c1: '#f093fb', c2: '#f5576c' },
+  { emoji: '🤗', c1: '#4facfe', c2: '#00f2fe' },
+  { emoji: '🦊', c1: '#43e97b', c2: '#38f9d7' },
+  { emoji: '🐱', c1: '#fa709a', c2: '#fee140' },
+  { emoji: '🐼', c1: '#a18cd1', c2: '#fbc2eb' },
+  { emoji: '🌟', c1: '#ffecd2', c2: '#fcb69f' },
+  { emoji: '🎓', c1: '#a1c4fd', c2: '#c2e9fb' },
+  { emoji: '📚', c1: '#d4fc79', c2: '#96e6a1' },
+  { emoji: '🎨', c1: '#f6d365', c2: '#fda085' },
+  { emoji: '🚀', c1: '#89f7fe', c2: '#66a6ff' },
+  { emoji: '🌈', c1: '#fddb92', c2: '#d1fdff' },
 ]
 
 const defaultAvatars = avatarConfigs.map((c, i) => ({
   id: i + 1,
-  url: generateAvatar(c.initials, c.bg, c.fg),
+  url: generateAvatar(c.emoji, c.c1, c.c2),
   name: `头像${i + 1}`,
 }))
 
