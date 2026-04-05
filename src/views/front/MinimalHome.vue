@@ -98,7 +98,7 @@
                 <p class="book-author">{{ book.author }}</p>
                 <div class="book-footer">
                   <span class="book-price">¥{{ book.price }}</span>
-                  <span class="book-condition">{{ book.xinjiuchengdu }}</span>
+                  <span class="book-condition">{{ book.condition_name }}</span>
                 </div>
               </div>
             </div>
@@ -168,7 +168,10 @@ const features = [
 
 const getImg = (value) => {
   if (!value) return ''
-  if (/^https?:\/\//i.test(value) || value.startsWith('data:image')) return value
+  if (value.startsWith('data:image')) return value
+  if (/^https?:\/\//i.test(value)) {
+    return `/api/file/image-proxy?url=${encodeURIComponent(value)}`
+  }
   const normalized = value.replace(/\\/g, '/').replace(/^\/+/, '')
   if (normalized.startsWith('upload/')) {
     return `/api/file/download/${normalized}`

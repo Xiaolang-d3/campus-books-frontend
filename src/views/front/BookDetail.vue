@@ -156,7 +156,10 @@ const isLogin = !!localStorage.getItem('token')
 
 const getImg = (value) => {
   if (!value) return ''
-  if (/^https?:\/\//i.test(value) || value.startsWith('data:image')) return value
+  if (value.startsWith('data:image')) return value
+  if (/^https?:\/\//i.test(value)) {
+    return `/api/file/image-proxy?url=${encodeURIComponent(value)}`
+  }
   const normalized = value.replace(/\\/g, '/').replace(/^\/+/, '')
   if (normalized.startsWith('upload/')) {
     return `/api/file/download/${normalized}`
